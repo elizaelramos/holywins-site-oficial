@@ -1,0 +1,12 @@
+<svg width="640" height="480" viewBox="0 0 640 480" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Louvor da juventude">
+  <defs>
+    <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0b1a3a" />
+      <stop offset="100%" stop-color="#274b9f" />
+    </linearGradient>
+  </defs>
+  <rect width="640" height="480" fill="url(#g1)" />
+  <path d="M120 360 Q160 240 220 320 T340 320 T460 220 T540 260" stroke="#7cc4ff" stroke-width="18" fill="none" opacity="0.7" />
+  <circle cx="280" cy="190" r="70" fill="#a5d8ff" opacity="0.8" />
+  <circle cx="420" cy="140" r="60" fill="#f5fafe" opacity="0.6" />
+</svg>

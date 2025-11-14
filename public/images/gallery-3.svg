@@ -1,0 +1,12 @@
+<svg width="640" height="480" viewBox="0 0 640 480" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Adoração noturna">
+  <defs>
+    <radialGradient id="g3" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#fef4ce" />
+      <stop offset="100%" stop-color="#061638" />
+    </radialGradient>
+  </defs>
+  <rect width="640" height="480" fill="#061638" />
+  <circle cx="320" cy="200" r="200" fill="url(#g3)" />
+  <path d="M80 420 Q220 320 320 360 T560 380" stroke="#a7d0ff" stroke-width="25" fill="none" opacity="0.4" />
+  <path d="M120 420 Q240 340 340 380 T520 360" stroke="#f8f0d0" stroke-width="10" fill="none" opacity="0.7" />
+</svg>

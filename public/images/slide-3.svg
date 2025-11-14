@@ -1,0 +1,27 @@
+<svg width="900" height="600" viewBox="0 0 900 600" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Festival de santos abstrato">
+  <defs>
+    <linearGradient id="grad3" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0%" stop-color="#071c3c" />
+      <stop offset="100%" stop-color="#5d8cff" />
+    </linearGradient>
+  </defs>
+  <rect width="900" height="600" fill="url(#grad3)" />
+  <g fill="#dce8ff" opacity="0.8">
+    <circle cx="180" cy="180" r="70" />
+    <circle cx="320" cy="280" r="60" />
+    <circle cx="460" cy="190" r="50" />
+    <circle cx="650" cy="250" r="90" />
+    <circle cx="770" cy="150" r="55" />
+  </g>
+  <g fill="none" stroke="#fef1c7" stroke-width="12" opacity="0.7">
+    <path d="M100 420 Q260 300 400 440 T760 360" />
+    <path d="M140 500 Q320 360 520 500 T860 450" />
+  </g>
+  <g stroke="#ffffff" stroke-linecap="round" stroke-width="6" opacity="0.8">
+    <path d="M200 140 V260" />
+    <path d="M340 240 V360" />
+    <path d="M480 120 V260" />
+    <path d="M620 220 V360" />
+    <path d="M760 100 V240" />
+  </g>
+</svg>

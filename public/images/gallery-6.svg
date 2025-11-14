@@ -1,0 +1,16 @@
+<svg width="640" height="480" viewBox="0 0 640 480" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Famílias em missão">
+  <defs>
+    <linearGradient id="g6" x1="0" y1="0" x2="1" y2="0.8">
+      <stop offset="0%" stop-color="#071833" />
+      <stop offset="100%" stop-color="#1c4e92" />
+    </linearGradient>
+  </defs>
+  <rect width="640" height="480" fill="url(#g6)" />
+  <path d="M120 360 Q220 240 320 360 T520 360" stroke="#9bd7ff" stroke-width="22" fill="none" opacity="0.5" />
+  <g fill="#f7f3d4" opacity="0.85">
+    <circle cx="200" cy="250" r="26" />
+    <circle cx="260" cy="210" r="22" />
+    <circle cx="380" cy="220" r="24" />
+    <circle cx="440" cy="260" r="28" />
+  </g>
+</svg>
