@@ -1,37 +1,41 @@
 import { Link } from 'react-router-dom'
 import Carousel from '../components/Carousel.tsx'
+import BannerCarousel from '../components/BannerCarousel.tsx'
+import InstagramEmbed from '../components/InstagramEmbed.tsx'
 import { useSiteData } from '../context/SiteDataContext.tsx'
 
 const highlights = [
   {
-    title: 'Vigília Jovem',
-    detail: 'Adoração guiada por ministérios locais',
+    title: 'Música Holywins',
+    detail: 'Escute a música oficial do evento',
     icon: '🎶',
+    audio: '/audio/musica-holywins.mp3',
   },
   {
-    title: 'Festival de Santos',
-    detail: 'Apresentações artísticas e testemunhos',
+    title: 'Cartinha Premiada',
+    detail: 'Resultado do concurso da melhor carta do Holywins-2025',
     icon: '✨',
   },
   {
-    title: 'Ação Solidária',
-    detail: 'Arrecadação de alimentos e agasalhos',
-    icon: '🤝',
+    title: 'Resultados do desfile',
+    detail: 'Veja os ganhadores com as melhores caracterização do Holywins-2025',
+    icon: '🏆',
   },
 ]
 
 const schedule = [
-  { time: '19h00', title: 'Boas-vindas & louvor', description: 'Ministério Holywins' },
-  { time: '20h15', title: 'Procissão luminosa', description: 'Saída pelas ruas do bairro' },
-  { time: '21h00', title: 'Festival de santos', description: 'Teatro, música e testemunhos' },
-  { time: '22h30', title: 'Adoração e envio', description: 'Momento de intercessão e bênção final' },
+  { time: '18h00', title: 'Boas-vindas & Eucaristia', description: 'Santa Missa, Solenidade de Todos os Santos' },
+  { time: '19h15', title: 'Desfile, Música e alimentação', description: 'Início do Holywins no Centro Juvenil' },
+  { time: '21h00', title: 'Música', description: 'Show com Coral de Ladário' },
+  { time: '22h30', title: 'Premiação e Mais Música', description: 'Grupo da Paróquia e bênção final' },
 ]
 
 export default function Home() {
-  const { hero, slides } = useSiteData()
+  const { hero, slides, banners } = useSiteData()
 
   return (
     <div className="page-stack">
+      <BannerCarousel banners={banners} />
       <section className="hero-panel">
         <div className="hero-copy">
           <p className="eyebrow">Evento oficial Holywins</p>
@@ -67,6 +71,12 @@ export default function Home() {
             </span>
             <h3>{item.title}</h3>
             <p>{item.detail}</p>
+            {item.audio && (
+              <audio controls style={{ width: '100%', marginTop: '1rem' }}>
+                <source src={item.audio} type="audio/mpeg" />
+                Seu navegador não suporta o elemento de áudio.
+              </audio>
+            )}
           </article>
         ))}
       </section>
@@ -74,11 +84,13 @@ export default function Home() {
       <section className="timeline-card">
         <div>
           <p className="eyebrow">Programação oficial</p>
-          <h2>Uma noite inteira de luz</h2>
-          <p>
-            Vivencie momentos de evangelização urbana, testemunhos inspiradores e adoração que abraça toda a
-            comunidade. Cada momento foi pensado para famílias, jovens e crianças.
-          </p>
+          <h2>Uma festa do céu na terra</h2>
+            <p>
+            No Holywins 2025, cristãos se reuniram para celebrar a santidade de forma criativa e alegre, 
+            vestindo-se como seus santos favoritos. Foi uma noite de fé, comunhão e testemunho, onde 
+            cada fantasia contou a história de vidas dedicadas a Cristo.
+            </p>
+            <InstagramEmbed url={hero.instagramPostUrl} />
         </div>
         <ol>
           {schedule.map((item) => (

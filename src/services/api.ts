@@ -3,7 +3,10 @@ import type {
   GalleryItem,
   HeroContent,
   SiteDataState,
+  Slide,
   Sponsor,
+  Message,
+  Banner,
 } from '../context/SiteDataContext'
 
 const RAW_API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api'
@@ -59,13 +62,75 @@ export async function deleteGalleryItemRequest(id: string) {
   await request<void>(`/gallery/${id}`, { method: 'DELETE' })
 }
 
-export async function createSponsorRequest(sponsor: Omit<Sponsor, 'id'>) {
-  return request<Sponsor>('/sponsors', {
+export async function createSponsorRequest(formData: FormData) {
+  const response = await fetch(`${API_URL}/sponsors`, {
     method: 'POST',
-    body: JSON.stringify(sponsor),
+    body: formData,
   })
+
+  if (!response.ok) {
+    const message = await response.text()
+    throw new Error(message || 'Erro ao comunicar com a API Holywins')
+  }
+
+  return (await response.json()) as Sponsor
 }
 
 export async function deleteSponsorRequest(id: string) {
   await request<void>(`/sponsors/${id}`, { method: 'DELETE' })
+}
+
+export async function createMessageRequest(message: { name: string; email: string; phone?: string; message: string; recaptchaToken?: string }) {
+  return request<Message>('/messages', {
+    method: 'POST',
+    body: JSON.stringify(message),
+  })
+}
+
+export async function fetchMessagesRequest() {
+  return request<Message[]>('/messages')
+}
+
+export async function deleteMessageRequest(id: string) {
+  await request<void>(`/messages/${id}`, { method: 'DELETE' })
+}
+
+export async function createSlideRequest(formData: FormData) {
+  const response = await fetch(`${API_URL}/slides`, {
+    method: 'POST',
+    body: formData,
+  })
+
+  if (!response.ok) {
+    const message = await response.text()
+    throw new Error(message || 'Erro ao comunicar com a API Holywins')
+  }
+
+  return (await response.json()) as Slide
+}
+
+export async function deleteSlideRequest(id: string) {
+  await request<void>(`/slides/${id}`, { method: 'DELETE' })
+}
+
+export async function fetchBannersRequest() {
+  return request<Banner[]>('/banners')
+}
+
+export async function createBannerRequest(formData: FormData) {
+  const response = await fetch(`${API_URL}/banners`, {
+    method: 'POST',
+    body: formData,
+  })
+
+  if (!response.ok) {
+    const message = await response.text()
+    throw new Error(message || 'Erro ao comunicar com a API Holywins')
+  }
+
+  return (await response.json()) as Banner
+}
+
+export async function deleteBannerRequest(id: string) {
+  await request<void>(`/banners/${id}`, { method: 'DELETE' })
 }

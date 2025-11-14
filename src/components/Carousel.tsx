@@ -46,7 +46,18 @@ export default function Carousel({ slides, autoPlayMs = 6000 }: CarouselProps) {
       aria-roledescription="carrossel"
     >
       <div className="carousel-visual">
-        <img src={currentSlide.image} alt={currentSlide.title} loading="lazy" />
+        {currentSlide.link ? (
+          <a
+            href={currentSlide.link}
+            aria-label={`Ver mais sobre ${currentSlide.title}`}
+            target={currentSlide.link.startsWith('http') ? '_blank' : undefined}
+            rel={currentSlide.link.startsWith('http') ? 'noreferrer' : undefined}
+          >
+            <img src={currentSlide.image} alt={currentSlide.title} loading="lazy" />
+          </a>
+        ) : (
+          <img src={currentSlide.image} alt={currentSlide.title} loading="lazy" />
+        )}
         <span className="carousel-pill" style={{ background: currentSlide.accent }}>
           {activeIndex + 1}/{sanitizedSlides.length}
         </span>
@@ -56,6 +67,17 @@ export default function Carousel({ slides, autoPlayMs = 6000 }: CarouselProps) {
         <p className="eyebrow">Próxima experiência</p>
         <h3>{currentSlide.title}</h3>
         <p>{currentSlide.description}</p>
+        {currentSlide.link && (
+          <a
+            className="ghost-btn"
+            href={currentSlide.link}
+            aria-label={`Acessar ${currentSlide.title}`}
+            target={currentSlide.link.startsWith('http') ? '_blank' : undefined}
+            rel={currentSlide.link.startsWith('http') ? 'noreferrer' : undefined}
+          >
+            Saiba mais
+          </a>
+        )}
         <div className="carousel-controls">
           <button type="button" onClick={() => goTo(activeIndex - 1)} aria-label="Slide anterior">
             ◀

@@ -1,27 +1,42 @@
 import { type FormEvent, useState } from 'react'
 import { useSiteData } from '../context/SiteDataContext.tsx'
+import { createMessageRequest } from '../services/api'
 
 type ContactFormState = {
   name: string
   email: string
+  phone?: string
   message: string
 }
 
 const initialForm: ContactFormState = {
   name: '',
   email: '',
+  phone: '',
   message: '',
 }
 
 export default function Contact() {
   const { contact } = useSiteData()
   const [form, setForm] = useState(initialForm)
-  const [status, setStatus] = useState<'idle' | 'success'>('idle')
+  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    setStatus('success')
-    setForm(initialForm)
+    setStatus('idle')
+    try {
+      await createMessageRequest({
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        message: form.message,
+      })
+      setStatus('success')
+      setForm(initialForm)
+    } catch (error) {
+      console.error('Erro ao enviar mensagem', error)
+      setStatus('error')
+    }
   }
 
   return (
@@ -59,8 +74,13 @@ export default function Contact() {
         </div>
         <div className="map-placeholder" aria-hidden>
           <div>
-            <p>Mapa interativo em breve</p>
-            <small>Inclua aqui o embed oficial quando estiver disponível.</small>
+            <img
+              src="/images/emoji_santidade_Holywins.png"
+              alt="emoji santidade"
+              className="emoji-icon"
+            />
+            <p className="map-title">Formulário de inscrições fechado no momento</p>
+            <small className="map-sub">Fique tranquilo — quando abrirmos as inscrições, o formulário aparecerá neste local para você se cadastrar.</small>
           </div>
         </div>
       </section>
@@ -90,6 +110,14 @@ export default function Contact() {
             />
           </label>
           <label>
+            Telefone (WhatsApp)
+            <input
+              type="text"
+              value={form.phone}
+              onChange={(event) => setForm((prev) => ({ ...prev, phone: event.target.value }))}
+            />
+          </label>
+          <label>
             Mensagem
             <textarea
               rows={4}
@@ -102,6 +130,7 @@ export default function Contact() {
             Enviar mensagem
           </button>
           {status === 'success' && <p className="success-text">Mensagem enviada! Retornaremos em breve.</p>}
+                  {status === 'error' && <p className="success-text" style={{ color: '#ff8ea3' }}>Falha ao enviar. Tente novamente.</p>}
         </form>
       </section>
     </div>

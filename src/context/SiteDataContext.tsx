@@ -1,12 +1,16 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import {
   createGalleryItemRequest,
+  createSlideRequest,
   createSponsorRequest,
   deleteGalleryItemRequest,
+  deleteSlideRequest,
   deleteSponsorRequest,
   fetchSiteData,
   saveContact,
   saveHero,
+  createBannerRequest,
+  deleteBannerRequest,
 } from '../services/api'
 
 export type HeroContent = {
@@ -15,6 +19,7 @@ export type HeroContent = {
   date: string
   location: string
   callToAction: string
+  instagramPostUrl?: string | null
 }
 
 export type ContactInfo = {
@@ -31,6 +36,7 @@ export type Slide = {
   description: string
   image: string
   accent: string
+  link?: string | null
 }
 
 export type GalleryItem = {
@@ -47,12 +53,31 @@ export type Sponsor = {
   image: string
 }
 
+export type Banner = {
+  id: string
+  title: string
+  image: string
+  link?: string | null
+  sortOrder: number
+}
+
+export type Message = {
+  id: string
+  name: string
+  email: string
+  phone?: string | null
+  message: string
+  isRead: boolean
+  createdAt: string
+}
+
 export type SiteDataState = {
   hero: HeroContent
   contact: ContactInfo
   slides: Slide[]
   gallery: GalleryItem[]
   sponsors: Sponsor[]
+  banners: Banner[]
 }
 
 const initialData: SiteDataState = {
@@ -62,6 +87,7 @@ const initialData: SiteDataState = {
     date: '31 de outubro · 19h',
     location: 'Paróquia São Miguel Arcanjo, Centro',
     callToAction: 'Quero participar',
+    instagramPostUrl: null,
   },
   contact: {
     phone: '(11) 4002-8922',
@@ -77,6 +103,7 @@ const initialData: SiteDataState = {
       description: 'Traga sua vela e participe de um ato público de fé pelas ruas do bairro.',
       image: '/images/slide-1.svg',
       accent: '#6ac8ff',
+      link: '#inscricoes',
     },
     {
       id: 'slide-2',
@@ -84,6 +111,7 @@ const initialData: SiteDataState = {
       description: 'Momento de louvor conduzido pelo ministério de música Holywins.',
       image: '/images/slide-2.svg',
       accent: '#8ab5ff',
+      link: '/galeria',
     },
     {
       id: 'slide-3',
@@ -91,6 +119,7 @@ const initialData: SiteDataState = {
       description: 'Apresentações criativas contando histórias de santidade para toda a família.',
       image: '/images/slide-3.svg',
       accent: '#b0d4ff',
+      link: '/contato',
     },
   ],
   gallery: [
@@ -146,6 +175,7 @@ const initialData: SiteDataState = {
     { id: 'sponsor-marcelo', name: 'Vereador Marcelo Araújo', image: '/images/Patrocinadores/VEREADOR_MARCELO_ARAÚJO.jpg' },
     { id: 'sponsor-vasconcellos', name: 'Vereador Vasconcellos', image: '/images/Patrocinadores/VEREADOR_VASCONCELLOS.jpg' },
   ],
+  banners: [],
 }
 
 type SiteDataContextValue = {
@@ -154,6 +184,7 @@ type SiteDataContextValue = {
   slides: Slide[]
   gallery: GalleryItem[]
   sponsors: Sponsor[]
+  banners: Banner[]
   isAuthenticated: boolean
   isLoading: boolean
   lastSyncError: string | null
@@ -163,8 +194,12 @@ type SiteDataContextValue = {
   updateContact: (contact: ContactInfo) => Promise<void>
   addGalleryItem: (item: Omit<GalleryItem, 'id'>) => Promise<void>
   removeGalleryItem: (id: string) => Promise<void>
-  addSponsor: (sponsor: Omit<Sponsor, 'id'>) => Promise<void>
+  addSponsor: (formData: FormData) => Promise<void>
   removeSponsor: (id: string) => Promise<void>
+  addSlide: (formData: FormData) => Promise<void>
+  removeSlide: (id: string) => Promise<void>
+  addBanner: (formData: FormData) => Promise<void>
+  removeBanner: (id: string) => Promise<void>
 }
 
 const SiteDataContext = createContext<SiteDataContextValue | undefined>(undefined)
@@ -175,6 +210,7 @@ export function SiteDataProvider({ children }: { children: ReactNode }) {
   const [slides, setSlides] = useState(initialData.slides)
   const [gallery, setGallery] = useState(initialData.gallery)
   const [sponsors, setSponsors] = useState(initialData.sponsors)
+  const [banners, setBanners] = useState(initialData.banners)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [lastSyncError, setLastSyncError] = useState<string | null>(null)
@@ -188,6 +224,7 @@ export function SiteDataProvider({ children }: { children: ReactNode }) {
         setSlides(payload.slides)
         setGallery(payload.gallery)
         setSponsors(payload.sponsors)
+        setBanners(payload.banners)
         setLastSyncError(null)
       } catch (error) {
         console.error('Erro ao buscar dados iniciais', error)
@@ -256,9 +293,57 @@ export function SiteDataProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const addSponsor = useCallback(async (sponsor: Omit<Sponsor, 'id'>) => {
+  const addSlide = useCallback(async (formData: FormData) => {
     try {
-      const created = await createSponsorRequest(sponsor)
+      const created = await createSlideRequest(formData)
+      setSlides((current) => [created, ...current])
+      setLastSyncError(null)
+    } catch (error) {
+      console.error('Erro ao adicionar slide', error)
+      setLastSyncError('Falha ao adicionar slide.')
+      throw error
+    }
+  }, [])
+
+  const removeSlide = useCallback(async (id: string) => {
+    try {
+      await deleteSlideRequest(id)
+      setSlides((current) => current.filter((slide) => slide.id !== id))
+      setLastSyncError(null)
+    } catch (error) {
+      console.error('Erro ao remover slide', error)
+      setLastSyncError('Falha ao remover slide.')
+      throw error
+    }
+  }, [])
+
+  const addBanner = useCallback(async (formData: FormData) => {
+    try {
+      const created = await createBannerRequest(formData)
+      setBanners((current) => [...current, created])
+      setLastSyncError(null)
+    } catch (error) {
+      console.error('Erro ao adicionar banner', error)
+      setLastSyncError('Falha ao adicionar banner.')
+      throw error
+    }
+  }, [])
+
+  const removeBanner = useCallback(async (id: string) => {
+    try {
+      await deleteBannerRequest(id)
+      setBanners((current) => current.filter((banner) => banner.id !== id))
+      setLastSyncError(null)
+    } catch (error) {
+      console.error('Erro ao remover banner', error)
+      setLastSyncError('Falha ao remover banner.')
+      throw error
+    }
+  }, [])
+
+  const addSponsor = useCallback(async (formData: FormData) => {
+    try {
+      const created = await createSponsorRequest(formData)
       setSponsors((current) => [...current, created])
       setLastSyncError(null)
     } catch (error) {
@@ -287,6 +372,7 @@ export function SiteDataProvider({ children }: { children: ReactNode }) {
       slides,
       gallery,
       sponsors,
+      banners,
       isAuthenticated,
       isLoading,
       lastSyncError,
@@ -298,6 +384,10 @@ export function SiteDataProvider({ children }: { children: ReactNode }) {
       removeGalleryItem,
       addSponsor,
       removeSponsor,
+      addSlide,
+      removeSlide,
+      addBanner,
+      removeBanner,
     }),
     [
       hero,
@@ -305,6 +395,7 @@ export function SiteDataProvider({ children }: { children: ReactNode }) {
       slides,
       gallery,
       sponsors,
+      banners,
       isAuthenticated,
       isLoading,
       lastSyncError,
@@ -316,6 +407,10 @@ export function SiteDataProvider({ children }: { children: ReactNode }) {
       removeGalleryItem,
       addSponsor,
       removeSponsor,
+      addSlide,
+      removeSlide,
+      addBanner,
+      removeBanner,
     ],
   )
 

@@ -6,10 +6,11 @@ import Admin from './pages/Admin.tsx'
 import SponsorsBar from './components/SponsorsBar.tsx'
 
 const routes = [
-  { path: '/', label: 'Início' },
-  { path: '/galeria', label: 'Galeria' },
-  { path: '/contato', label: 'Contato' },
-  { path: '/admin', label: 'Admin' },
+  { path: '/', label: 'Início', showInNav: true },
+  { path: '/galeria', label: 'Galeria', showInNav: true },
+  { path: '/contato', label: 'Contato', showInNav: true },
+  // Admin is intentionally kept as a route but hidden from the public navigation
+  { path: '/admin', label: 'Admin', showInNav: false },
 ]
 
 function App() {
@@ -24,7 +25,7 @@ function App() {
           <img src="/images/logo.png" alt="Holywins" className="brand-logo" />
         </Link>
         <nav className="main-nav" aria-label="Navegação principal">
-          {routes.map((route) => (
+          {routes.filter((r) => r.showInNav).map((route) => (
             <NavLink
               key={route.path}
               to={route.path}
@@ -69,7 +70,7 @@ function App() {
       <SponsorsBar />
 
       <footer className="app-footer">
-        <p>© {new Date().getFullYear()} Holywins · Comunidade Católica</p>
+        <p>© {new Date().getFullYear()} Holywins · Paróquia São João Bosco</p>
         <span>Luz vence as trevas</span>
       </footer>
     </div>

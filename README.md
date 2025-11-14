@@ -6,6 +6,7 @@ Aplicação em React + TypeScript criada para divulgar o Holywins, evento catól
 
 - **Landing page responsiva** com visual moderno em tons de azul e elementos em glassmorphism.
 - **Carrossel interativo** destacando momentos do evento.
+- **Faixa de banners hero** com autoplay e CTA configurável direto do admin.
 - **Galeria filtrável** por categoria (Celebração, Juventude e Ação Social).
 - **Página de contato** com informações oficiais e formulário com feedback imediato.
 - **Painel administrativo** com persistência real em MySQL para hero, contatos, galeria e patrocinadores.
@@ -75,9 +76,9 @@ O primeiro comando gera a pasta `dist/` e o segundo roda um servidor apenas para
 
 ## 🔐 Painel Admin
 
-Tudo que é editado no painel (`/admin`) agora dispara chamadas para a API Express, que grava os dados diretamente nas tabelas `hero_content`, `contact_info`, `gallery_items` e `sponsors`. Caso a API esteja offline, o site continua exibindo os dados locais e mostra um alerta no topo do painel.
+Tudo que é editado no painel (`/admin`) agora dispara chamadas para a API Express, que grava os dados diretamente nas tabelas `hero_content`, `contact_info`, `gallery_items`, `sponsors` e `banners`. Caso a API esteja offline, o site continua exibindo os dados locais e mostra um alerta no topo do painel.
 
-Para cadastrar novos patrocinadores ou fotos, basta informar o nome e o caminho da imagem dentro de `public/` (ou uma URL completa acessível pelo navegador). As alterações aparecem em tempo real na home.
+Para cadastrar novos patrocinadores ou fotos, basta informar o nome e o caminho da imagem dentro de `public/` (ou uma URL completa acessível pelo navegador). No caso dos banners, utilize a nova aba **Banners** para fazer upload das artes (indicamos 1920x640px) — os arquivos são armazenados automaticamente em `public/images/banners/`, com título, link e ordem salvos no banco. As alterações aparecem em tempo real na home.
 
 ### Login padrão
 

@@ -8,6 +8,8 @@ const port = Number(process.env.PORT ?? 4000)
 const allowedOrigins = (process.env.CLIENT_ORIGIN?.split(',').map((origin) => origin.trim()).filter(Boolean) ?? [
   'http://localhost:5173',
   'http://127.0.0.1:5173',
+  'http://localhost:5174',
+  'http://127.0.0.1:5174',
 ])
 
 const allowAll = allowedOrigins.includes('*')
