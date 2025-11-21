@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import {
   createGalleryItemRequest,
+  setGalleryItemCoverRequest,
   createSlideRequest,
   createSponsorRequest,
   deleteGalleryItemRequest,
@@ -10,7 +11,11 @@ import {
   saveContact,
   saveHero,
   createBannerRequest,
+  updateBannerRequest,
   deleteBannerRequest,
+  createCommunityRequest,
+  updateCommunityRequest,
+  deleteCommunityRequest,
 } from '../services/api'
 
 export type HeroContent = {
@@ -44,7 +49,11 @@ export type GalleryItem = {
   title: string
   description: string
   image: string
-  category: 'Celebração' | 'Ação Social' | 'Juventude'
+  // Category was changed to a free string to support edition years (ex: '2022')
+  category: string
+  // Optional persisted share link (may be another group's key or a URL)
+  shareLink?: string | null
+  isCover?: boolean
 }
 
 export type Sponsor = {
@@ -53,13 +62,108 @@ export type Sponsor = {
   image: string
 }
 
+export type BannerComponentType = 'text' | 'image' | 'imageWithLink'
+
+export type BannerAnimationType =
+  | 'fadeIn'
+  | 'fadeInUp'
+  | 'fadeInDown'
+  | 'fadeInLeft'
+  | 'fadeInRight'
+  | 'slideInUp'
+  | 'slideInDown'
+  | 'slideInLeft'
+  | 'slideInRight'
+  | 'zoomIn'
+  | 'bounce'
+  | 'none'
+
+export type BannerTextComponent = {
+  id: string
+  type: 'text'
+  content: string
+  x: number // position in pixels
+  y: number
+  fontSize: number
+  fontFamily: string
+  fontWeight: 'normal' | 'bold' | '100' | '200' | '300' | '400' | '500' | '600' | '700' | '800' | '900'
+  fontStyle: 'normal' | 'italic'
+  color: string
+  textAlign: 'left' | 'center' | 'right'
+  animation: BannerAnimationType
+  animationDelay: number // in milliseconds
+  animationDuration: number // in milliseconds
+  width?: number // optional width constraint
+  lineHeight?: number
+  textShadow?: string
+}
+
+export type BannerImageComponent = {
+  id: string
+  type: 'image'
+  src: string
+  x: number
+  y: number
+  width: number
+  height: number
+  animation: BannerAnimationType
+  animationDelay: number
+  animationDuration: number
+  borderRadius?: number
+  opacity?: number
+}
+
+export type BannerImageWithLinkComponent = {
+  id: string
+  type: 'imageWithLink'
+  src: string
+  link: string
+  x: number
+  y: number
+  width: number
+  height: number
+  animation: BannerAnimationType
+  animationDelay: number
+  animationDuration: number
+  borderRadius?: number
+  opacity?: number
+}
+
+export type BannerComponent = BannerTextComponent | BannerImageComponent | BannerImageWithLinkComponent
+
 export type Banner = {
   id: string
   title: string
-  image: string
+  image: string // Path to GIF or MP4 file (1351x725px)
   link?: string | null
   sortOrder: number
+  // Legacy/builder fields (backward compatibility)
+  imageMobile?: string | null
+  backgroundImage?: string | null
+  components?: BannerComponent[]
+  isDraft?: boolean
+  isPublished?: boolean
+  updatedAt?: string
 }
+
+export type Community = {
+  id: string;
+  name: string;
+  category: 'Catedral' | 'Santuário' | 'Paróquia' | 'Capela' | 'Comunidade';
+  isMain: boolean;
+  parentId: string | null;
+  priestName: string;
+  priestPhotoUrl: string;
+  massSchedule: string;
+  address: string;
+  phone: string;
+  instagramUrl: string;
+  facebookUrl: string;
+  dioceseUrl: string;
+  imageUrl: string;
+  latitude?: number | null;
+  longitude?: number | null;
+};
 
 export type Message = {
   id: string
@@ -78,6 +182,7 @@ export type SiteDataState = {
   gallery: GalleryItem[]
   sponsors: Sponsor[]
   banners: Banner[]
+  communities: Community[]
 }
 
 const initialData: SiteDataState = {
@@ -176,6 +281,7 @@ const initialData: SiteDataState = {
     { id: 'sponsor-vasconcellos', name: 'Vereador Vasconcellos', image: '/images/Patrocinadores/VEREADOR_VASCONCELLOS.jpg' },
   ],
   banners: [],
+  communities: [],
 }
 
 type SiteDataContextValue = {
@@ -185,6 +291,7 @@ type SiteDataContextValue = {
   gallery: GalleryItem[]
   sponsors: Sponsor[]
   banners: Banner[]
+  communities: Community[]
   isAuthenticated: boolean
   isLoading: boolean
   lastSyncError: string | null
@@ -192,14 +299,19 @@ type SiteDataContextValue = {
   logout: () => void
   updateHero: (hero: HeroContent) => Promise<void>
   updateContact: (contact: ContactInfo) => Promise<void>
-  addGalleryItem: (item: Omit<GalleryItem, 'id'>) => Promise<void>
+  addGalleryItem: (item: Omit<GalleryItem, 'id'> | FormData) => Promise<void>
   removeGalleryItem: (id: string) => Promise<void>
+  setGalleryItemCover: (id: string) => Promise<void>
   addSponsor: (formData: FormData) => Promise<void>
   removeSponsor: (id: string) => Promise<void>
   addSlide: (formData: FormData) => Promise<void>
   removeSlide: (id: string) => Promise<void>
   addBanner: (formData: FormData) => Promise<void>
   removeBanner: (id: string) => Promise<void>
+  updateBanner: (id: string, formData: FormData) => Promise<void>
+  addCommunity: (data: Partial<Community>) => Promise<void>
+  updateCommunity: (id: string, data: Partial<Community>) => Promise<void>
+  removeCommunity: (id: string) => Promise<void>
 }
 
 const SiteDataContext = createContext<SiteDataContextValue | undefined>(undefined)
@@ -211,6 +323,7 @@ export function SiteDataProvider({ children }: { children: ReactNode }) {
   const [gallery, setGallery] = useState(initialData.gallery)
   const [sponsors, setSponsors] = useState(initialData.sponsors)
   const [banners, setBanners] = useState(initialData.banners)
+  const [communities, setCommunities] = useState(initialData.communities)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [lastSyncError, setLastSyncError] = useState<string | null>(null)
@@ -225,6 +338,7 @@ export function SiteDataProvider({ children }: { children: ReactNode }) {
         setGallery(payload.gallery)
         setSponsors(payload.sponsors)
         setBanners(payload.banners)
+        setCommunities(payload.communities)
         setLastSyncError(null)
       } catch (error) {
         console.error('Erro ao buscar dados iniciais', error)
@@ -269,14 +383,35 @@ export function SiteDataProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const addGalleryItem = useCallback(async (item: Omit<GalleryItem, 'id'>) => {
+  const addGalleryItem = useCallback(async (item: Omit<GalleryItem, 'id'> | FormData) => {
     try {
-      const created = await createGalleryItemRequest(item)
-      setGallery((current) => [created, ...current])
+      const created = await createGalleryItemRequest(item as any)
+      // created may be a single item or an array when multiple files are uploaded
+      if (Array.isArray(created)) {
+        setGallery((current) => [...created, ...current])
+      } else {
+        setGallery((current) => [created, ...current])
+      }
       setLastSyncError(null)
     } catch (error) {
       console.error('Erro ao adicionar galeria', error)
       setLastSyncError('Falha ao adicionar item na galeria.')
+      throw error
+    }
+  }, [])
+
+  const setGalleryItemCover = useCallback(async (id: string) => {
+    try {
+      const updated = await setGalleryItemCoverRequest(id)
+      // updated is an array of items in the group; replace them in gallery state
+      setGallery((current) => {
+        const others = current.filter((g) => !updated.some((u) => u.id === g.id))
+        return [...updated, ...others]
+      })
+      setLastSyncError(null)
+    } catch (error) {
+      console.error('Erro ao definir capa da galeria', error)
+      setLastSyncError('Falha ao definir capa da galeria.')
       throw error
     }
   }, [])
@@ -341,6 +476,33 @@ export function SiteDataProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  const updateBanner = useCallback(async (id: string, formData: FormData) => {
+    try {
+      const updated = await updateBannerRequest(id, formData)
+      setBanners((current) => current.map((b) => (b.id === id ? updated : b)))
+      setLastSyncError(null)
+    } catch (error) {
+      console.error('Erro ao atualizar banner', error)
+      setLastSyncError('Falha ao atualizar banner.')
+      throw error
+    }
+  }, [])
+
+  const addCommunity = useCallback(async (data: Partial<Community>) => {
+    const created = await createCommunityRequest(data)
+    setCommunities((prev) => [created, ...prev])
+  }, [])
+
+  const updateCommunityLocal = useCallback(async (id: string, data: Partial<Community>) => {
+    const updated = await updateCommunityRequest(id, data)
+    setCommunities((prev) => prev.map((c) => (c.id === updated.id ? updated : c)))
+  }, [])
+
+  const removeCommunity = useCallback(async (id: string) => {
+    await deleteCommunityRequest(id)
+    setCommunities((prev) => prev.filter((c) => c.id !== id))
+  }, [])
+
   const addSponsor = useCallback(async (formData: FormData) => {
     try {
       const created = await createSponsorRequest(formData)
@@ -373,6 +535,7 @@ export function SiteDataProvider({ children }: { children: ReactNode }) {
       gallery,
       sponsors,
       banners,
+      communities,
       isAuthenticated,
       isLoading,
       lastSyncError,
@@ -382,12 +545,17 @@ export function SiteDataProvider({ children }: { children: ReactNode }) {
       updateContact,
       addGalleryItem,
       removeGalleryItem,
+      setGalleryItemCover,
       addSponsor,
       removeSponsor,
+      addCommunity,
+      updateCommunity: updateCommunityLocal,
+      removeCommunity,
       addSlide,
       removeSlide,
       addBanner,
       removeBanner,
+      updateBanner,
     }),
     [
       hero,
@@ -396,6 +564,7 @@ export function SiteDataProvider({ children }: { children: ReactNode }) {
       gallery,
       sponsors,
       banners,
+      communities,
       isAuthenticated,
       isLoading,
       lastSyncError,
@@ -407,6 +576,9 @@ export function SiteDataProvider({ children }: { children: ReactNode }) {
       removeGalleryItem,
       addSponsor,
       removeSponsor,
+      addCommunity,
+      updateCommunityLocal,
+      removeCommunity,
       addSlide,
       removeSlide,
       addBanner,

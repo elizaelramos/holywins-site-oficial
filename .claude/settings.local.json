@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-Content \"c:\\dev\\site-holywins-oficial\\server\\migrations\\add_banner_builder.sql\")",
+      "Bash(cat:*)",
+      "Bash(npm run dev:*)",
+      "Bash(powershell:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)",
+      "Bash(node index.js:*)",
+      "Bash(curl:*)",
+      "Bash(node -e:*)",
+      "Bash(dir:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run server:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

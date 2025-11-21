@@ -22,13 +22,18 @@ const connection2 = await mysql.createConnection({
   port: 3306,
   user: 'elizaelramos',
   password: 'Elizael@011224',
-  database: 'holywins'
+  database: 'holywins',
+  multipleStatements: true
 })
 
 const statements = tablesSql.split(';').filter(s => s.trim())
 for (const statement of statements) {
   await connection2.execute(statement)
 }
+
+const communitiesSql = fs.readFileSync('server/communities.sql', 'utf8');
+await connection2.query(communitiesSql);
+
 await connection2.end()
 
 console.log('Banco de dados e tabelas criados com sucesso.')

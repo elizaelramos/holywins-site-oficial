@@ -51,7 +51,24 @@ export async function saveContact(contact: ContactInfo) {
   })
 }
 
-export async function createGalleryItemRequest(item: Omit<GalleryItem, 'id'>) {
+export async function createGalleryItemRequest(item: Omit<GalleryItem, 'id'> | FormData) {
+  // Accept either a plain object (JSON) or a FormData (with one or many files)
+  if (item instanceof FormData) {
+    const response = await fetch(`${API_URL}/gallery`, {
+      method: 'POST',
+      body: item,
+    })
+
+    if (!response.ok) {
+      const message = await response.text()
+      throw new Error(message || 'Erro ao comunicar com a API Holywins')
+    }
+
+    // Server may return a single item or an array of items when multiple files uploaded
+    const data = await response.json()
+    return data as GalleryItem | GalleryItem[]
+  }
+
   return request<GalleryItem>('/gallery', {
     method: 'POST',
     body: JSON.stringify(item),
@@ -60,6 +77,26 @@ export async function createGalleryItemRequest(item: Omit<GalleryItem, 'id'>) {
 
 export async function deleteGalleryItemRequest(id: string) {
   await request<void>(`/gallery/${id}`, { method: 'DELETE' })
+}
+
+export async function updateGalleryItemRequest(id: string, data: Partial<{ title: string; description: string; category: string; shareLink: string | null }>) {
+  return request<GalleryItem>(`/gallery/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  })
+}
+
+export async function setGalleryItemCoverRequest(id: string) {
+  const response = await fetch(`${API_URL}/gallery/${id}/cover`, {
+    method: 'PUT',
+  })
+
+  if (!response.ok) {
+    const message = await response.text()
+    throw new Error(message || 'Erro ao comunicar com a API Holywins')
+  }
+
+  return (await response.json()) as GalleryItem[]
 }
 
 export async function createSponsorRequest(formData: FormData) {
@@ -117,20 +154,111 @@ export async function fetchBannersRequest() {
   return request<Banner[]>('/banners')
 }
 
-export async function createBannerRequest(formData: FormData) {
-  const response = await fetch(`${API_URL}/banners`, {
+export async function uploadBannerImageRequest(file: File): Promise<string> {
+  const formData = new FormData()
+  formData.append('image', file)
+
+  const response = await fetch(`${API_URL}/banners/upload-image`, {
     method: 'POST',
     body: formData,
   })
 
   if (!response.ok) {
     const message = await response.text()
-    throw new Error(message || 'Erro ao comunicar com a API Holywins')
+    throw new Error(message || 'Erro ao fazer upload da imagem')
   }
 
-  return (await response.json()) as Banner
+  const data = await response.json()
+  return data.url
+}
+
+export async function createBannerRequest(data: FormData | Partial<Banner>) {
+  if (data instanceof FormData) {
+    const response = await fetch(`${API_URL}/banners`, {
+      method: 'POST',
+      body: data,
+    })
+
+    if (!response.ok) {
+      const message = await response.text()
+      throw new Error(message || 'Erro ao comunicar com a API Holywins')
+    }
+
+    return (await response.json()) as Banner
+  }
+
+  // Send as JSON for builder banners
+  return request<Banner>('/banners', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  })
 }
 
 export async function deleteBannerRequest(id: string) {
   await request<void>(`/banners/${id}`, { method: 'DELETE' })
+}
+
+export async function updateBannerRequest(id: string, data: FormData | Partial<Banner>) {
+  if (data instanceof FormData) {
+    const response = await fetch(`${API_URL}/banners/${id}`, {
+      method: 'PUT',
+      body: data,
+    })
+
+    if (!response.ok) {
+      const message = await response.text()
+      throw new Error(message || 'Erro ao comunicar com a API Holywins')
+    }
+
+    return (await response.json()) as Banner
+  }
+
+  // Send as JSON for builder banners
+  return request<Banner>(`/banners/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  })
+}
+
+export async function createCommunityRequest(community: Partial<import('../context/SiteDataContext').Community> | FormData) {
+  // Accept either FormData (for file uploads) or JSON payload
+  if (community instanceof FormData) {
+    const response = await fetch(`${API_URL}/communities`, {
+      method: 'POST',
+      body: community as unknown as FormData,
+    })
+    if (!response.ok) {
+      const message = await response.text()
+      throw new Error(message || 'Erro ao comunicar com a API Holywins')
+    }
+    return (await response.json()) as import('../context/SiteDataContext').Community
+  }
+
+  return request<import('../context/SiteDataContext').Community>('/communities', {
+    method: 'POST',
+    body: JSON.stringify(community),
+  })
+}
+
+export async function updateCommunityRequest(id: string, community: Partial<import('../context/SiteDataContext').Community> | FormData) {
+  if (community instanceof FormData) {
+    const response = await fetch(`${API_URL}/communities/${id}`, {
+      method: 'PUT',
+      body: community as unknown as FormData,
+    })
+    if (!response.ok) {
+      const message = await response.text()
+      throw new Error(message || 'Erro ao comunicar com a API Holywins')
+    }
+    return (await response.json()) as import('../context/SiteDataContext').Community
+  }
+
+  return request<import('../context/SiteDataContext').Community>(`/communities/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(community),
+  })
+}
+
+export async function deleteCommunityRequest(id: string) {
+  return request<void>(`/communities/${id}`, { method: 'DELETE' })
 }

@@ -27,7 +27,10 @@ CREATE TABLE IF NOT EXISTS gallery_items (
   title VARCHAR(255) NOT NULL,
   description TEXT NOT NULL,
   image VARCHAR(255) NOT NULL,
-  category ENUM('Celebração', 'Ação Social', 'Juventude') NOT NULL,
+  -- category switched to free text to support edition years (ex: '2022')
+  category VARCHAR(255) NOT NULL,
+  -- optional share link to reference another gallery or URL
+  share_link VARCHAR(255) DEFAULT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -67,9 +70,15 @@ CREATE TABLE IF NOT EXISTS banners (
   id INT AUTO_INCREMENT PRIMARY KEY,
   title VARCHAR(255) NOT NULL,
   image VARCHAR(255) NOT NULL,
+  image_mobile VARCHAR(255) DEFAULT NULL,
   link VARCHAR(255) DEFAULT NULL,
   sort_order INT NOT NULL DEFAULT 0,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  background_image VARCHAR(255) DEFAULT NULL,
+  components JSON DEFAULT NULL,
+  is_draft BOOLEAN DEFAULT FALSE,
+  is_published BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 INSERT INTO hero_content (id, title, subtitle, date, location, call_to_action)

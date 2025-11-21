@@ -1,8 +1,9 @@
-import { Link } from 'react-router-dom'
-import Carousel from '../components/Carousel.tsx'
 import BannerCarousel from '../components/BannerCarousel.tsx'
 import InstagramEmbed from '../components/InstagramEmbed.tsx'
 import { useSiteData } from '../context/SiteDataContext.tsx'
+import { useEffect, useState } from 'react'
+import ContactForm from '../components/ContactForm.tsx'
+import PlaylistCarousel from '../components/PlaylistCarousel.tsx'
 
 const highlights = [
   {
@@ -12,7 +13,7 @@ const highlights = [
     audio: '/audio/musica-holywins.mp3',
   },
   {
-    title: 'Cartinha Premiada',
+    title: 'Carta Premiada',
     detail: 'Resultado do concurso da melhor carta do Holywins-2025',
     icon: '✨',
   },
@@ -31,79 +32,102 @@ const schedule = [
 ]
 
 export default function Home() {
-  const { hero, slides, banners } = useSiteData()
+  const { hero, banners } = useSiteData()
+  const [moments, setMoments] = useState<Array<{ id: string; images: string[]; link: string }> | null>(null)
+  const [playlist, setPlaylist] = useState<Array<{ id: string; title: string; youtube?: string; audio?: string }> | null>(null)
+
+  useEffect(() => {
+    let mounted = true
+    ;(async () => {
+      try {
+        const resp = await fetch(`${import.meta.env.VITE_API_URL ?? '/api'}/moments`)
+        if (!resp.ok) return
+        const json = await resp.json()
+        if (mounted) setMoments(json)
+      } catch (err) {
+        console.warn('Could not load moments', err)
+      }
+    })()
+    return () => { mounted = false }
+  }, [])
+
+  useEffect(() => {
+    let mounted = true
+    ;(async () => {
+      try {
+        const resp = await fetch(`${import.meta.env.VITE_API_URL ?? '/api'}/playlist`)
+        if (!resp.ok) return
+        const json = await resp.json()
+        if (mounted) setPlaylist(json)
+      } catch (err) {
+        console.warn('Could not load playlist', err)
+      }
+    })()
+    return () => { mounted = false }
+  }, [])
 
   return (
-    <div className="page-stack">
+    <>
       <BannerCarousel banners={banners} />
-      <section className="hero-panel">
-        <div className="hero-copy">
-          <p className="eyebrow">Evento oficial Holywins</p>
-          <h1>{hero.title}</h1>
-          <p className="lead">{hero.subtitle}</p>
-          <ul className="hero-info">
-            <li>
-              <span>Data</span>
-              <strong>{hero.date}</strong>
-            </li>
-            <li>
-              <span>Local</span>
-              <strong>{hero.location}</strong>
-            </li>
-          </ul>
-          <div className="cta-row" id="inscricoes">
-            <Link className="primary-btn" to="/contato">
-              {hero.callToAction}
-            </Link>
-            <Link className="ghost-btn" to="/galeria">
-              Ver memórias
-            </Link>
-          </div>
+
+      <section className="moments-section">
+        <h2 className="moments-title">
+          RELEMBRE OS MOMENTOS MARCANTES
+          <br />
+          DO HOLYWINS
+        </h2>
+        <div className="moments-grid">
+          {(moments && moments.length && moments.length >= 1) ? (
+            // Each entry corresponds to one layered card (images: [bg, front, hover])
+            moments.map((entry) => {
+              const bg = entry.images?.[0] ?? ''
+              const front = entry.images?.[1] ?? ''
+              const hover = entry.images?.[2] ?? ''
+              const href = entry.link || '/galeria'
+              return (
+                <a key={entry.id} href={href} className="moment-card">
+                  {bg ? <div className="moment-bg" style={{ backgroundImage: `url(${bg})` }} /> : <div className="moment-bg" />}
+                  {front && <div className="moment-front" style={{ backgroundImage: `url(${front})` }} />}
+                  {hover && <div className="moment-hover" style={{ backgroundImage: `url(${hover})` }} />}
+                </a>
+              )
+            })
+          ) : (
+            // fallback to static assets (keep a single 3-card fallback)
+            [1,2,3].map((i) => (
+              <a key={i} href="/galeria" className="moment-card">
+                <div className="moment-bg" style={{ backgroundImage: `url(/images/gallery/moment${i}-bg.png)` }} />
+              </a>
+            ))
+          )}
         </div>
-        <Carousel slides={slides} />
       </section>
 
-      <section className="page-card grid-3">
-        {highlights.map((item) => (
-          <article className="glass-card" key={item.title}>
-            <span className="icon-badge" aria-hidden>
-              {item.icon}
-            </span>
-            <h3>{item.title}</h3>
-            <p>{item.detail}</p>
-            {item.audio && (
+      <div className="page-stack">
+        <ContactForm />
+
+      <section className="page-card reveal-on-scroll">
+        <p className="eyebrow">Playlist</p>
+        <h2>Playlist Holywins</h2>
+        <div>
+          {(playlist && playlist.length) ? (
+            <PlaylistCarousel items={playlist} />
+          ) : (
+            <article className="glass-card">
+              <span className="icon-badge" aria-hidden>🎶</span>
+              <h3>Música Holywins</h3>
+              <p>Escute a música oficial do evento</p>
               <audio controls style={{ width: '100%', marginTop: '1rem' }}>
-                <source src={item.audio} type="audio/mpeg" />
+                <source src="/audio/musica-holywins.mp3" type="audio/mpeg" />
                 Seu navegador não suporta o elemento de áudio.
               </audio>
-            )}
-          </article>
-        ))}
+            </article>
+          )}
+        </div>
       </section>
 
-      <section className="timeline-card">
-        <div>
-          <p className="eyebrow">Programação oficial</p>
-          <h2>Uma festa do céu na terra</h2>
-            <p>
-            No Holywins 2025, cristãos se reuniram para celebrar a santidade de forma criativa e alegre, 
-            vestindo-se como seus santos favoritos. Foi uma noite de fé, comunhão e testemunho, onde 
-            cada fantasia contou a história de vidas dedicadas a Cristo.
-            </p>
-            <InstagramEmbed url={hero.instagramPostUrl} />
-        </div>
-        <ol>
-          {schedule.map((item) => (
-            <li key={item.time}>
-              <div className="schedule-time">{item.time}</div>
-              <div>
-                <strong>{item.title}</strong>
-                <p>{item.description}</p>
-              </div>
-            </li>
-          ))}
-        </ol>
-      </section>
-    </div>
+      
+      </div>
+    </>
   )
 }

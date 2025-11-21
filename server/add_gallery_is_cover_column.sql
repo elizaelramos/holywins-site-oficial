@@ -1,0 +1,2 @@
+ALTER TABLE gallery_items
+ADD COLUMN is_cover TINYINT(1) NOT NULL DEFAULT 0;
