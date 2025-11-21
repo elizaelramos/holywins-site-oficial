@@ -44,6 +44,46 @@ export default function Gallery() {
     return () => window.removeEventListener('keydown', onKey)
   }, [viewerIndex, selectedGroup])
 
+  // Touch/Swipe navigation for mobile
+  useEffect(() => {
+    if (viewerIndex === null) return
+
+    let touchStartX = 0
+    let touchEndX = 0
+
+    function handleTouchStart(e: TouchEvent) {
+      touchStartX = e.changedTouches[0].screenX
+    }
+
+    function handleTouchEnd(e: TouchEvent) {
+      touchEndX = e.changedTouches[0].screenX
+      handleSwipe()
+    }
+
+    function handleSwipe() {
+      const swipeThreshold = 50 // minimum distance for swipe
+      const diff = touchStartX - touchEndX
+
+      if (Math.abs(diff) > swipeThreshold) {
+        if (diff > 0) {
+          // Swiped left - go to next image
+          setViewerIndex((i) => (i === null ? null : Math.min((selectedGroup?.images.length ?? 1) - 1, i + 1)))
+        } else {
+          // Swiped right - go to previous image
+          setViewerIndex((i) => (i === null ? null : Math.max(0, i - 1)))
+        }
+      }
+    }
+
+    window.addEventListener('touchstart', handleTouchStart)
+    window.addEventListener('touchend', handleTouchEnd)
+
+    return () => {
+      window.removeEventListener('touchstart', handleTouchStart)
+      window.removeEventListener('touchend', handleTouchEnd)
+    }
+  }, [viewerIndex, selectedGroup])
+
   // When switching groups, reset viewer
   useEffect(() => {
     setViewerIndex(null)
@@ -148,14 +188,16 @@ export default function Gallery() {
               <button
                 aria-label="Anterior"
                 onClick={() => setViewerIndex((i) => (i === null ? null : Math.max(0, i - 1)))}
-                style={{ position: 'absolute', left: -40, top: '50%', transform: 'translateY(-50%)', background: 'transparent', color: '#fff', border: 'none', fontSize: '2rem', cursor: 'pointer' }}
+                className="lightbox-nav lightbox-nav-prev"
+                style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', background: 'transparent', color: '#fff', border: 'none', fontSize: '2rem', cursor: 'pointer', width: '48px', height: '48px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >
                 ‹
               </button>
               <button
                 aria-label="Próxima"
                 onClick={() => setViewerIndex((i) => (i === null ? null : Math.min((selectedGroup.images.length ?? 1) - 1, i + 1)))}
-                style={{ position: 'absolute', right: -40, top: '50%', transform: 'translateY(-50%)', background: 'transparent', color: '#fff', border: 'none', fontSize: '2rem', cursor: 'pointer' }}
+                className="lightbox-nav lightbox-nav-next"
+                style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'transparent', color: '#fff', border: 'none', fontSize: '2rem', cursor: 'pointer', width: '48px', height: '48px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >
                 ›
               </button>

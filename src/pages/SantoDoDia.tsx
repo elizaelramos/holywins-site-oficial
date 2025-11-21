@@ -13,7 +13,7 @@ export default function SantoDoDia() {
 
       <section
         className="page-card reveal-on-scroll"
-        style={{ padding: 0, minHeight: 'calc(100vh - 120px)' }}
+        style={{ padding: 0, minHeight: '800px' }}
       >
         <iframe
           title="Santo do Dia - Canção Nova"
@@ -22,8 +22,8 @@ export default function SantoDoDia() {
           className="santo-iframe"
           style={{
             width: '100%',
-            minHeight: 'calc(100vh - 160px)',
-            height: 'calc(100vh - 160px)',
+            minHeight: '800px',
+            height: '800px',
             border: 'none',
             borderRadius: 12,
             overflow: 'hidden',
