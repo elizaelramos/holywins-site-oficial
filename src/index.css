@@ -20,9 +20,17 @@
 }
 
 @media (min-width: 769px) {
+
   /* On larger screens restore flow layout so lateral thumbnails are visible */
-  .playlist-carousel .pc-slide { position: relative; top: auto; left: auto; }
-  .playlist-carousel .pc-viewport { overflow: visible; }
+  .playlist-carousel .pc-slide {
+    position: relative;
+    top: auto;
+    left: auto;
+  }
+
+  .playlist-carousel .pc-viewport {
+    overflow: visible;
+  }
 }
 
 * {
@@ -517,6 +525,7 @@ nav,
 .page-card.grid-3 {
   display: block;
 }
+
 .page-card.grid-3 .music-card {
   max-width: 820px;
   margin: 0 auto;
@@ -525,25 +534,29 @@ nav,
   flex-direction: column;
   align-items: stretch;
   gap: 1rem;
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.00));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.00));
   border-radius: 20px;
 }
+
 .page-card.grid-3 .music-card .icon-badge {
   font-size: 2rem;
 }
+
 .page-card.grid-3 .music-card h3 {
   font-size: clamp(1.5rem, 3.5vw, 2rem);
   margin: 0;
 }
+
 .page-card.grid-3 .music-card p {
   margin: 0;
   color: var(--text-muted);
 }
+
 .page-card.grid-3 .music-card audio {
   width: 100%;
   height: 72px;
   border-radius: 12px;
-  background: rgba(0,0,0,0.05);
+  background: rgba(0, 0, 0, 0.05);
 }
 
 .page-card h1,
@@ -616,12 +629,10 @@ nav,
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(2, 11, 29, 0.45) 0%,
-    rgba(3, 21, 51, 0.35) 40%,
-    rgba(10, 47, 108, 0.25) 100%
-  );
+  background: linear-gradient(135deg,
+      rgba(2, 11, 29, 0.45) 0%,
+      rgba(3, 21, 51, 0.35) 40%,
+      rgba(10, 47, 108, 0.25) 100%);
   z-index: 0;
 }
 
@@ -636,7 +647,7 @@ nav,
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
 
-.hero-panel > *:not(.hero-copy) {
+.hero-panel>*:not(.hero-copy) {
   position: relative;
   z-index: 1;
 }
@@ -682,7 +693,8 @@ nav,
   color: #1e293b;
   border-color: rgba(30, 41, 59, 0.3);
   background: rgba(255, 255, 255, 0.5);
-  margin-top: 1rem; /* add space so the CTA doesn't visually overlap the section below */
+  margin-top: 1rem;
+  /* add space so the CTA doesn't visually overlap the section below */
 }
 
 .hero-panel .carousel-content .ghost-btn:hover {
@@ -728,7 +740,8 @@ nav,
 }
 
 .instagram-embed-container {
-  max-width: 380px; /* same as blockquote maxWidth for consistency */
+  max-width: 380px;
+  /* same as blockquote maxWidth for consistency */
   width: 100%;
   margin-top: 1rem;
 }
@@ -947,7 +960,7 @@ nav,
   background: rgba(6, 33, 89, 0.4);
 }
 
-.map-placeholder > div {
+.map-placeholder>div {
   padding: clamp(1rem, 2vw, 2rem);
   text-align: center;
   max-width: 520px;
@@ -971,7 +984,7 @@ nav,
 }
 
 .map-placeholder .map-sub {
-  color: rgba(255,255,255,0.9);
+  color: rgba(255, 255, 255, 0.9);
   font-size: 1rem;
 }
 
@@ -1032,10 +1045,12 @@ select {
   font-weight: 600;
   transition: background 0.18s ease, color 0.18s ease, transform 0.08s ease;
 }
+
 .admin-tab:hover {
   background: rgba(255, 255, 255, 0.04);
   color: #fff;
 }
+
 .admin-tab:active {
   transform: translateY(1px);
 }
@@ -1078,6 +1093,7 @@ select {
   border-radius: 12px;
   overflow: hidden;
 }
+
 .messages-table thead th {
   text-align: left;
   padding: 0.85rem 1rem;
@@ -1086,11 +1102,13 @@ select {
   font-weight: 700;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
+
 .messages-table tbody td {
   padding: 0.75rem 1rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.03);
   color: var(--text-muted);
 }
+
 .messages-table tr:nth-child(odd) td {
   background: rgba(255, 255, 255, 0.01);
 }
@@ -1099,19 +1117,26 @@ select {
   .messages-table thead {
     display: none;
   }
-  .messages-table, .messages-table tbody, .messages-table tr, .messages-table td {
+
+  .messages-table,
+  .messages-table tbody,
+  .messages-table tr,
+  .messages-table td {
     display: block;
     width: 100%;
   }
+
   .messages-table tr {
     margin-bottom: 1rem;
     border: 1px solid rgba(255, 255, 255, 0.03);
     border-radius: 12px;
     overflow: hidden;
   }
+
   .messages-table td {
     padding: 0.75rem 1rem;
   }
+
   .messages-table td::before {
     content: attr(data-label);
     display: block;
@@ -1171,6 +1196,7 @@ select {
   from {
     transform: translateX(0);
   }
+
   to {
     transform: translateX(-50%);
   }
@@ -1457,6 +1483,7 @@ select {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -1467,6 +1494,7 @@ select {
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1478,6 +1506,7 @@ select {
     opacity: 0;
     transform: translateY(-30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1489,6 +1518,7 @@ select {
     opacity: 0;
     transform: translateX(-30px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -1500,6 +1530,7 @@ select {
     opacity: 0;
     transform: translateX(30px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -1510,6 +1541,7 @@ select {
   from {
     transform: translateY(100%);
   }
+
   to {
     transform: translateY(0);
   }
@@ -1519,6 +1551,7 @@ select {
   from {
     transform: translateY(-100%);
   }
+
   to {
     transform: translateY(0);
   }
@@ -1528,6 +1561,7 @@ select {
   from {
     transform: translateX(-100%);
   }
+
   to {
     transform: translateX(0);
   }
@@ -1537,6 +1571,7 @@ select {
   from {
     transform: translateX(100%);
   }
+
   to {
     transform: translateX(0);
   }
@@ -1547,6 +1582,7 @@ select {
     opacity: 0;
     transform: scale(0.3);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -1554,12 +1590,19 @@ select {
 }
 
 @keyframes bounce {
-  0%, 20%, 50%, 80%, 100% {
+
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
     transform: translateY(0);
   }
+
   40% {
     transform: translateY(-20px);
   }
+
   60% {
     transform: translateY(-10px);
   }
@@ -1682,6 +1725,7 @@ select {
   .playlist-grid {
     grid-template-columns: repeat(3, 1fr);
   }
+
   .playlist-grid .glass-card {
     aspect-ratio: 1 / 1;
   }
@@ -1712,6 +1756,7 @@ select {
   perspective: 1600px;
   padding: 1rem;
 }
+
 .playlist-carousel .pc-viewport {
   display: flex;
   align-items: center;
@@ -1721,6 +1766,7 @@ select {
   height: 280px;
   transform-style: preserve-3d;
 }
+
 .playlist-carousel .pc-slide {
   min-width: 200px;
   width: 260px;
@@ -1728,16 +1774,20 @@ select {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 750ms cubic-bezier(.18,.9,.25,1), opacity 420ms ease;
+  transition: transform 750ms cubic-bezier(.18, .9, .25, 1), opacity 420ms ease;
   transform-origin: 50% 50% calc(var(--my));
   cursor: pointer;
-  filter: drop-shadow(0 14px 30px rgba(0,0,0,0.4));
+  filter: drop-shadow(0 14px 30px rgba(0, 0, 0, 0.4));
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translateX(-50%) translateY(-50%);
 }
-.playlist-carousel .pc-slide:not(.active) { opacity: 0.85 }
+
+.playlist-carousel .pc-slide:not(.active) {
+  opacity: 0.85
+}
+
 .playlist-carousel .pc-card {
   width: 100%;
   height: 92%;
@@ -1750,9 +1800,27 @@ select {
   padding: 14px;
   transform: rotateX(calc(var(--my) * 0.12deg)) rotateY(calc(var(--mx) * 0.04deg));
 }
-.playlist-carousel .pc-thumb { font-size: 36px }
-.playlist-carousel .pc-thumb { display:flex; align-items:center; justify-content:center; width:88px; height:88px; flex: 0 0 88px }
-.playlist-carousel .pc-thumb-img { width: 88px; height: 88px; object-fit: cover; border-radius: 8px; display:block }
+
+.playlist-carousel .pc-thumb {
+  font-size: 36px
+}
+
+.playlist-carousel .pc-thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 88px;
+  height: 88px;
+  flex: 0 0 88px
+}
+
+.playlist-carousel .pc-thumb-img {
+  width: 88px;
+  height: 88px;
+  object-fit: cover;
+  border-radius: 8px;
+  display: block
+}
 
 .pc-play-btn {
   position: absolute;
@@ -1760,7 +1828,7 @@ select {
   top: 50%;
   transform: translate(-50%, -50%);
   z-index: 60;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0, 0, 0, 0.6);
   color: #fff;
   border: none;
   width: 56px;
@@ -1773,53 +1841,96 @@ select {
   cursor: pointer;
   backdrop-filter: blur(4px);
 }
-.pc-play-btn.playing { background: rgba(255,80,80,0.9) }
-.playlist-carousel .pc-body h4 { margin: 0 0 4px 0 }
-.playlist-carousel .pc-sub { color: #9fb3d6; font-size: 0.85rem }
-.playlist-carousel .pc-controls { display:flex; align-items:center; justify-content:center; gap:12px; margin-top:12px }
-.playlist-carousel .pc-controls button { background: rgba(255,255,255,0.06); color: #fff; border: none; padding: 8px 10px; border-radius: 6px; cursor: pointer }
-.playlist-carousel .pc-dots { display:flex; gap:6px }
-.playlist-carousel .pc-dots button { width:10px; height:10px; border-radius:999px; background: rgba(255,255,255,0.12); border: none }
-.playlist-carousel .pc-dots button.active { background: #6ac8ff }
+
+.pc-play-btn.playing {
+  background: rgba(255, 80, 80, 0.9)
+}
+
+.playlist-carousel .pc-body h4 {
+  margin: 0 0 4px 0
+}
+
+.playlist-carousel .pc-sub {
+  color: #9fb3d6;
+  font-size: 0.85rem
+}
+
+.playlist-carousel .pc-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 12px
+}
+
+.playlist-carousel .pc-controls button {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  border: none;
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer
+}
+
+.playlist-carousel .pc-dots {
+  display: flex;
+  gap: 6px
+}
+
+.playlist-carousel .pc-dots button {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  border: none
+}
+
+.playlist-carousel .pc-dots button.active {
+  background: #6ac8ff
+}
 
 @media (max-width: 768px) {
-  .playlist-carousel .pc-viewport { height: 200px }
+  .playlist-carousel .pc-viewport {
+    height: 200px
+  }
+
   /* reduzir largura dos slides no mobile para permitir peeks laterais */
-  .playlist-carousel .pc-slide { width: 180px }
+  .playlist-carousel .pc-slide {
+    width: 180px
+  }
 
   /* permitir overflow para que as miniaturas laterais (peeks) fiquem visíveis */
-  .playlist-carousel .pc-viewport { overflow: visible; }
+  .playlist-carousel .pc-viewport {
+    overflow: visible;
+  }
 
   /* não esconder slides não-ativos — deixamos as miniaturas visíveis no mobile */
 }
 
 .pc-embed {
   position: absolute;
-  left: 8px;
-  right: 8px;
-  top: 8px;
+  left: 0;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
   /* TV-like ratio */
   aspect-ratio: 16 / 9;
-  width: calc(100% - 16px);
+  width: 100%;
   margin: 0 auto;
-  border-radius: 8px;
+  border-radius: 12px;
   overflow: hidden;
   z-index: 40;
   display: block;
+  background: #000;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
-.pc-embed iframe { width: 100%; height: 100%; display: block }
-.pc-embed-close {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 50;
-  background: rgba(0,0,0,0.6);
-  color: #fff;
-  border: none;
-  padding: 6px 8px;
-  border-radius: 6px;
-  cursor: pointer;
+
+.pc-embed iframe {
+  width: 100%;
+  height: 100%;
+  display: block
 }
+
 
 
 .moment-card {

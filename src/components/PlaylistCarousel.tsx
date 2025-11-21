@@ -4,15 +4,16 @@ type Item = { id: string; title: string; youtube?: string; audio?: string }
 
 export default function PlaylistCarousel({ items, autoPlayMs = 5000 }: { items: Item[]; autoPlayMs?: number }) {
   const [active, setActive] = useState(0)
+  const [playingIndex, setPlayingIndex] = useState<number | null>(null)
   const containerRef = useRef<HTMLDivElement | null>(null)
   const [isPaused, setIsPaused] = useState(false)
   const [winW, setWinW] = useState<number>(typeof window !== 'undefined' ? window.innerWidth : 1200)
 
   useEffect(() => {
-    if (!items.length || isPaused) return
+    if (!items.length || isPaused || playingIndex !== null) return
     const id = window.setInterval(() => setActive((a) => (a + 1) % items.length), autoPlayMs)
     return () => window.clearInterval(id)
-  }, [items.length, autoPlayMs, isPaused])
+  }, [items.length, autoPlayMs, isPaused, playingIndex])
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -56,7 +57,7 @@ export default function PlaylistCarousel({ items, autoPlayMs = 5000 }: { items: 
     return `https://img.youtube.com/vi/${id}/hqdefault.jpg`
   }
 
-  const [playingIndex, setPlayingIndex] = useState<number | null>(null)
+
 
   const togglePlay = (i: number, youtube?: string) => {
     if (!youtube) {
@@ -88,7 +89,7 @@ export default function PlaylistCarousel({ items, autoPlayMs = 5000 }: { items: 
           const spacingPx = slideW + gap
           const offsetPx = pos * spacingPx
           // Use pixel-based offset for precise centering on all sizes
-          const transform = `translateX(calc(-50% + ${offsetPx}px)) translateZ(${ -Math.abs(pos) * DEPTH_Z}px) rotateY(${pos * -ROT_Y}deg) scale(${1 - Math.abs(pos) * SCALE_STEP}) translateY(-50%)`
+          const transform = `translateX(calc(-50% + ${offsetPx}px)) translateZ(${-Math.abs(pos) * DEPTH_Z}px) rotateY(${pos * -ROT_Y}deg) scale(${1 - Math.abs(pos) * SCALE_STEP}) translateY(-50%)`
           const zIndex = items.length - Math.abs(pos)
           const thumb = thumbnailFor(it.youtube)
           const isActive = pos === 0
@@ -113,13 +114,13 @@ export default function PlaylistCarousel({ items, autoPlayMs = 5000 }: { items: 
               <div className="pc-card">
                 <div className="pc-thumb">
                   {thumb ? <img src={thumb} alt={it.title} className="pc-thumb-img" loading="lazy" /> : '🎵'}
-                  {isActive && it.youtube && (
+                  {isActive && it.youtube && !isPlaying && (
                     <button
-                      className={`pc-play-btn ${isPlaying ? 'playing' : ''}`}
+                      className="pc-play-btn"
                       onClick={(e) => { e.stopPropagation(); togglePlay(i, it.youtube) }}
-                      aria-label={isPlaying ? 'Pausar' : 'Reproduzir'}
+                      aria-label="Reproduzir"
                     >
-                      {isPlaying ? '▮▮' : '▶'}
+                      ▶
                     </button>
                   )}
                 </div>
@@ -137,7 +138,6 @@ export default function PlaylistCarousel({ items, autoPlayMs = 5000 }: { items: 
                       allow="autoplay; encrypted-media; picture-in-picture"
                       allowFullScreen
                     />
-                    <button className="pc-embed-close" onClick={(e) => { e.stopPropagation(); setPlayingIndex(null) }}>✕</button>
                   </div>
                 )}
               </div>
