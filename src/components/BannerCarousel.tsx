@@ -3,6 +3,8 @@ import type { Banner } from '../context/SiteDataContext'
 
 const EMOJI_SRC = '/images/emoji_santidade_Holywins.png'
 const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:4000'
+console.log('[BannerCarousel] VITE_API_URL:', import.meta.env.VITE_API_URL)
+console.log('[BannerCarousel] API_BASE_URL:', API_BASE_URL)
 
 type BannerCarouselProps = {
   banners: Banner[]
@@ -10,11 +12,20 @@ type BannerCarouselProps = {
 }
 
 export default function BannerCarousel({ banners, autoPlayMs = 7000 }: BannerCarouselProps) {
+  console.log('[BannerCarousel] Received banners:', banners)
+  console.log('[BannerCarousel] Banners count:', banners.length)
   const sanitized = useMemo(() => {
-    return [...banners]
+    console.log('[BannerCarousel] Processing banners...')
+    const result = [...banners]
       .filter(Boolean)
-      .filter((b) => b.isPublished !== false) // Only show published banners
+      .filter((b) => {
+        console.log('[BannerCarousel] Checking banner:', b.title, 'isPublished:', b.isPublished)
+        return b.isPublished !== false
+      }) // Only show published banners
       .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || a.title.localeCompare(b.title))
+    console.log('[BannerCarousel] Sanitized banners count:', result.length)
+    console.log('[BannerCarousel] Sanitized banners:', result)
+    return result
   }, [banners])
   const [activeIndex, setActiveIndex] = useState(0)
   const [isMobile, setIsMobile] = useState(false)
@@ -30,13 +41,22 @@ export default function BannerCarousel({ banners, autoPlayMs = 7000 }: BannerCar
   }, [])
 
   useEffect(() => {
-    if (!sanitized.length) return
+    if (!sanitized.length || sanitized.length === 1) return
+    console.log('[BannerCarousel] Setting up autoplay timer for', sanitized.length, 'banners, interval:', autoPlayMs, 'ms')
     const timer = window.setInterval(() => {
-      setActiveIndex((current) => (current + 1) % sanitized.length)
+      console.log('[BannerCarousel] Autoplay: advancing banner')
+      setActiveIndex((current) => {
+        const next = (current + 1) % sanitized.length
+        console.log('[BannerCarousel] Moving from index', current, 'to', next)
+        return next
+      })
       setPlayAnimation(false)
       setTimeout(() => setPlayAnimation(true), 50)
     }, autoPlayMs)
-    return () => window.clearInterval(timer)
+    return () => {
+      console.log('[BannerCarousel] Clearing autoplay timer')
+      window.clearInterval(timer)
+    }
   }, [autoPlayMs, sanitized])
 
   useEffect(() => {
@@ -44,11 +64,13 @@ export default function BannerCarousel({ banners, autoPlayMs = 7000 }: BannerCar
   }, [])
 
   if (!sanitized.length) {
+    console.warn('[BannerCarousel] No sanitized banners to display - returning null')
     return null
   }
 
   const visibleIndex = activeIndex % sanitized.length
   const current = sanitized[visibleIndex]
+  console.log('[BannerCarousel] Rendering banner:', current.title, 'at index', visibleIndex, '/', sanitized.length - 1)
 
   // Determina o arquivo do banner (GIF ou MP4)
   const bannerFile = isMobile && current.imageMobile ? current.imageMobile : current.image
@@ -58,6 +80,8 @@ export default function BannerCarousel({ banners, autoPlayMs = 7000 }: BannerCar
   const bannerUrl = bannerFile.startsWith('http')
     ? bannerFile
     : `${API_BASE_URL}${bannerFile.startsWith('/') ? '' : '/'}${bannerFile}`
+
+  console.log('[BannerCarousel] Banner URL:', bannerUrl, 'isVideo:', isVideo)
 
   const card = (
     <article className="banner-card" style={{ position: 'relative', overflow: 'hidden' }}>

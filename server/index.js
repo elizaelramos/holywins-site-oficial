@@ -10,6 +10,12 @@ import usersRoutes from './routes/users.js'
 import logsRoutes from './routes/logs.js'
 
 const app = express()
+// When the app is behind a reverse proxy (nginx, load balancer), enable trust proxy
+// so express can correctly detect the original request protocol (https) and
+// session cookies with `secure: true` work as expected.
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1)
+}
 const port = Number(process.env.PORT ?? 4000)
 
 // Get origins from env and add defaults
@@ -40,7 +46,9 @@ app.use(
     credentials: true, // Allow cookies
   }),
 )
-app.use(express.json())
+// Aumentar limite de payload JSON para 500MB (para uploads grandes)
+app.use(express.json({ limit: '500mb' }))
+app.use(express.urlencoded({ limit: '500mb', extended: true }))
 app.use(cookieParser())
 
 // Session configuration

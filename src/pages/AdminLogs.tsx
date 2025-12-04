@@ -41,7 +41,7 @@ export default function AdminLogs() {
   useEffect(() => {
     loadLogs()
     loadAvailableActions()
-  }, [pagination.page, filters])
+  }, [pagination.page, pagination.limit, filters])
 
   const loadLogs = async () => {
     setLoading(true)
@@ -64,7 +64,8 @@ export default function AdminLogs() {
 
       const data = await response.json()
       setLogs(data.logs)
-      setPagination(data.pagination)
+      // If server returns pagination, apply it but ensure we keep the requested page
+      setPagination((prev) => ({ ...prev, ...data.pagination }))
     } catch (err: any) {
       setError(err.message)
     } finally {
@@ -133,6 +134,26 @@ export default function AdminLogs() {
           <p style={{ marginTop: '0.5rem', color: 'var(--text-muted)' }}>
             Total de {pagination.total} registros
           </p>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.25rem', fontSize: '0.75rem' }}>Itens por página</label>
+              <select
+                value={pagination.limit}
+                onChange={(e) => {
+                  const limit = Number(e.target.value)
+                  setPagination({ ...pagination, page: 1, limit })
+                }}
+                style={{ padding: '0.5rem' }}
+              >
+                {[10, 20, 50, 100].map((v) => (
+                  <option key={v} value={v}>{v}</option>
+                ))}
+              </select>
+            </div>
+            <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
+              <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Exibindo {logs.length} de {pagination.total} registros</div>
+            </div>
+          </div>
         </div>
 
         {error && (
@@ -257,23 +278,72 @@ export default function AdminLogs() {
             gap: '1rem',
             marginTop: '2rem',
           }}>
-            <button
-              onClick={() => setPagination({ ...pagination, page: pagination.page - 1 })}
-              disabled={pagination.page === 1}
-              className="ghost-btn"
-            >
-              ← Anterior
-            </button>
-            <span style={{ fontSize: '0.875rem' }}>
-              Página {pagination.page} de {pagination.totalPages}
-            </span>
-            <button
-              onClick={() => setPagination({ ...pagination, page: pagination.page + 1 })}
-              disabled={pagination.page >= pagination.totalPages}
-              className="ghost-btn"
-            >
-              Próxima →
-            </button>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <button
+                onClick={() => setPagination({ ...pagination, page: 1 })}
+                disabled={pagination.page === 1}
+                className="ghost-btn"
+              >
+                « Primeiro
+              </button>
+              <button
+                onClick={() => setPagination({ ...pagination, page: pagination.page - 1 })}
+                disabled={pagination.page === 1}
+                className="ghost-btn"
+              >
+                ← Anterior
+              </button>
+            </div>
+            <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
+              {Array.from({ length: pagination.totalPages }).map((_, i) => {
+                const p = i + 1
+                // show limited pages for large totals
+                if (pagination.totalPages > 9) {
+                  const start = Math.max(1, pagination.page - 3)
+                  const end = Math.min(pagination.totalPages, pagination.page + 3)
+                  if (p < start || p > end) {
+                    if (p === 1 || p === pagination.totalPages) {
+                      return (
+                        <button
+                          key={p}
+                          onClick={() => setPagination({ ...pagination, page: p })}
+                          className="ghost-btn"
+                        >
+                          {p}
+                        </button>
+                      )
+                    }
+                    return null
+                  }
+                }
+                return (
+                  <button
+                    key={p}
+                    onClick={() => setPagination({ ...pagination, page: p })}
+                    className="ghost-btn"
+                    style={pagination.page === p ? { fontWeight: 700, background: 'var(--muted)', color: 'white' } : {}}
+                  >
+                    {p}
+                  </button>
+                )
+              })}
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                onClick={() => setPagination({ ...pagination, page: pagination.page + 1 })}
+                disabled={pagination.page >= pagination.totalPages}
+                className="ghost-btn"
+              >
+                Próxima →
+              </button>
+              <button
+                onClick={() => setPagination({ ...pagination, page: pagination.totalPages })}
+                disabled={pagination.page === pagination.totalPages}
+                className="ghost-btn"
+              >
+                Última »
+              </button>
+            </div>
           </div>
         )}
       </section>

@@ -121,7 +121,7 @@ export default function BannerEditor({ banner, onUpdate, onSave, onCancel }: Ban
   const handleUpdateComponent = (id: string, updates: Partial<BannerComponent>) => {
     onUpdate({
       ...banner,
-      components: components.map((c) => (c.id === id ? { ...c, ...updates } : c)),
+      components: components.map((c) => (c.id === id ? { ...c, ...updates } as BannerComponent : c)),
     })
   }
 

@@ -14,8 +14,9 @@ import {
   type Message,
   useSiteData,
 } from '../context/SiteDataContext.tsx'
-import { fetchMessagesRequest } from '../services/api'
+import { fetchMessagesRequest, updateGalleryItemRequest } from '../services/api'
 import { useAuth } from '../hooks/useAuth'
+import { compressImages } from '../utils/imageCompression'
 
 const blankGallery: Omit<GalleryItem, 'id'> = {
   title: '',
@@ -151,19 +152,45 @@ export default function Admin() {
   const handleGallerySubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setMessage('')
+    setErrorMessage('')
+    
     try {
-      const formData = new FormData(event.currentTarget)
+      const formElement = event.currentTarget
+      const fileInput = formElement.querySelector('input[name="images"]') as HTMLInputElement
+      const files = Array.from(fileInput?.files || [])
+      
+      if (!files.length) {
+        setErrorMessage('Selecione pelo menos uma imagem.')
+        return
+      }
+
+      // Mostrar mensagem de progresso
+      setMessage(`Comprimindo ${files.length} imagem(ns)... Por favor aguarde.`)
+      
+      // Comprimir todas as imagens antes de enviar
+      const compressedFiles = await compressImages(files, 500) // 500KB cada
+      
+      setMessage(`Enviando ${compressedFiles.length} imagem(ns)...`)
+      
+      // Criar FormData com imagens comprimidas
+      const formData = new FormData()
       formData.set('title', galleryForm.title)
       formData.set('description', galleryForm.description)
       formData.set('category', galleryForm.category)
+      
+      // Adicionar todas as imagens comprimidas
+      compressedFiles.forEach((file) => {
+        formData.append('images', file)
+      })
+      
       await addGalleryItem(formData)
       setGalleryForm(blankGallery)
-      event.currentTarget.reset()
+      formElement.reset()
       setGalleryPreview([])
-      setMessage('Nova foto adicionada à galeria!')
+      setMessage(`${compressedFiles.length} foto(s) adicionada(s) à galeria com sucesso!`)
       setErrorMessage('')
     } catch (error) {
-      console.error(error)
+      console.error('Erro ao adicionar galeria', error)
       setErrorMessage('Não foi possível cadastrar a foto.')
     }
   }
@@ -210,8 +237,8 @@ export default function Admin() {
     setMessage('')
     try {
       const formData = new FormData(event.currentTarget)
-      formData.set('title', bannerForm.title)
-      formData.set('link', bannerForm.link ?? '')
+      formData.set('title', newBannerForm.title ?? '')
+      formData.set('link', newBannerForm.link ?? '')
       const imageInput = event.currentTarget.querySelector('input[name="image"]') as HTMLInputElement
       const imageMobileInput = event.currentTarget.querySelector('input[name="imageMobile"]') as HTMLInputElement
       if (imageInput?.files?.[0]) {
@@ -221,7 +248,7 @@ export default function Admin() {
         formData.set('imageMobile', imageMobileInput.files[0])
       }
       await addBanner(formData)
-      setBannerForm(blankBanner)
+      setNewBannerForm(blankBanner)
       event.currentTarget.reset()
       setMessage('Banner publicado com sucesso!')
       setErrorMessage('')

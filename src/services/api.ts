@@ -11,10 +11,13 @@ import type {
 
 const RAW_API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:4000/api'
 const API_URL = RAW_API_URL.endsWith('/') ? RAW_API_URL.slice(0, -1) : RAW_API_URL
+console.log('[API] VITE_API_URL:', import.meta.env.VITE_API_URL)
+console.log('[API] Using API_URL:', API_URL)
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_URL}${path}`, {
     ...init,
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
       ...(init?.headers ?? {}),
@@ -57,6 +60,7 @@ export async function createGalleryItemRequest(item: Omit<GalleryItem, 'id'> | F
     const response = await fetch(`${API_URL}/gallery`, {
       method: 'POST',
       body: item,
+      credentials: 'include',
     })
 
     if (!response.ok) {
@@ -89,6 +93,7 @@ export async function updateGalleryItemRequest(id: string, data: Partial<{ title
 export async function setGalleryItemCoverRequest(id: string) {
   const response = await fetch(`${API_URL}/gallery/${id}/cover`, {
     method: 'PUT',
+    credentials: 'include',
   })
 
   if (!response.ok) {
@@ -103,6 +108,7 @@ export async function createSponsorRequest(formData: FormData) {
   const response = await fetch(`${API_URL}/sponsors`, {
     method: 'POST',
     body: formData,
+    credentials: 'include',
   })
 
   if (!response.ok) {
@@ -136,6 +142,7 @@ export async function createSlideRequest(formData: FormData) {
   const response = await fetch(`${API_URL}/slides`, {
     method: 'POST',
     body: formData,
+    credentials: 'include',
   })
 
   if (!response.ok) {
@@ -161,6 +168,7 @@ export async function uploadBannerImageRequest(file: File): Promise<string> {
   const response = await fetch(`${API_URL}/banners/upload-image`, {
     method: 'POST',
     body: formData,
+    credentials: 'include',
   })
 
   if (!response.ok) {
@@ -177,6 +185,7 @@ export async function createBannerRequest(data: FormData | Partial<Banner>) {
     const response = await fetch(`${API_URL}/banners`, {
       method: 'POST',
       body: data,
+      credentials: 'include',
     })
 
     if (!response.ok) {
@@ -203,6 +212,7 @@ export async function updateBannerRequest(id: string, data: FormData | Partial<B
     const response = await fetch(`${API_URL}/banners/${id}`, {
       method: 'PUT',
       body: data,
+      credentials: 'include',
     })
 
     if (!response.ok) {

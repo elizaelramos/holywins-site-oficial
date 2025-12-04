@@ -62,6 +62,14 @@ router.post('/login', async (req, res) => {
     req.session.userEmail = user.email
     req.session.userRole = user.role
 
+    // Ensure session is saved before responding so the Set-Cookie header is sent
+    await new Promise((resolve, reject) => {
+      req.session.save((err) => {
+        if (err) return reject(err)
+        resolve()
+      })
+    })
+
     // Log activity
     await logActivity(user.id, 'login', null, null, 'Usuário fez login', req.ip)
 

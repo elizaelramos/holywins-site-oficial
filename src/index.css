@@ -1148,60 +1148,141 @@ select {
   }
 }
 
-.sponsors-wrapper {
-  margin-top: 3rem;
-  padding: 1.5rem 0 0;
+/* ========== SEÇÃO DE PATROCINADORES ========== */
+.sponsors-section {
+  margin-top: 4rem;
+  padding: 3rem 0;
+  background: linear-gradient(180deg, transparent 0%, rgba(4, 9, 32, 0.4) 50%, transparent 100%);
 }
 
-.sponsors-title {
+.sponsors-header {
   text-align: center;
-  margin-bottom: 1rem;
+  margin-bottom: 2rem;
+  padding: 0 1rem;
 }
 
-.sponsors-bar {
+.sponsors-header h3 {
+  font-size: 2rem;
+  margin: 0.5rem 0;
+  background: linear-gradient(135deg, #fff 0%, #a5c4ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.sponsors-subtitle {
+  color: var(--text-muted);
+  font-size: 1rem;
+  margin-top: 0.5rem;
+}
+
+/* Desktop: Marquee infinito */
+.sponsors-marquee {
   position: relative;
   overflow: hidden;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: linear-gradient(90deg, rgba(4, 9, 32, 0.6), rgba(10, 31, 66, 0.8));
-  padding: 0.75rem 0;
+  padding: 1rem 0;
+  mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
 }
 
-.sponsors-track {
+.sponsors-marquee-track {
   display: flex;
-  gap: 1.25rem;
-  animation: sponsors-scroll 20s linear infinite;
+  gap: 2rem;
+  width: max-content;
+  animation: marquee-scroll 30s linear infinite;
 }
 
-.sponsor-pill {
+.sponsors-marquee-track.paused {
+  animation-play-state: paused;
+}
+
+@keyframes marquee-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-33.333%);
+  }
+}
+
+/* Cards de patrocinadores */
+.sponsor-card {
   margin: 0;
-  min-width: 180px;
-  max-width: 220px;
-  padding: 0.25rem;
-  border-radius: 0;
-  background: rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  transition: transform 0.3s ease;
+}
+
+.sponsor-card:hover {
+  transform: translateY(-5px);
+}
+
+.sponsor-card-inner {
+  width: 180px;
+  height: 100px;
+  padding: 1rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
   border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
   display: flex;
   justify-content: center;
   align-items: center;
-  overflow: hidden;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
 }
 
-.sponsor-pill img {
+.sponsor-card:hover .sponsor-card-inner {
+  border-color: rgba(165, 196, 255, 0.4);
+  box-shadow: 0 8px 32px rgba(165, 196, 255, 0.15);
+}
+
+.sponsor-card-inner img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+}
+
+.sponsor-card figcaption {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-align: center;
+  max-width: 180px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Mobile: Grid elegante */
+.sponsors-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  padding: 0 1rem;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.sponsors-grid .sponsor-card-inner {
   width: 100%;
   height: 80px;
-  object-fit: contain;
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.3));
+  padding: 0.75rem;
 }
 
-@keyframes sponsors-scroll {
-  from {
-    transform: translateX(0);
-  }
+.sponsors-grid .sponsor-card figcaption {
+  font-size: 0.75rem;
+  max-width: 100%;
+}
 
-  to {
-    transform: translateX(-50%);
-  }
+/* Remover estilos antigos */
+.sponsors-wrapper,
+.sponsors-title,
+.sponsors-bar,
+.sponsors-track,
+.sponsor-pill {
+  /* Mantido para compatibilidade - será removido */
 }
 
 .app-footer {
@@ -1273,41 +1354,33 @@ select {
   }
 
   /* Melhorias para seção de patrocinadores no mobile */
-  .sponsors-wrapper {
+  .sponsors-section {
     margin-top: 2rem;
-    padding: 1rem 0 0;
+    padding: 2rem 0;
   }
 
-  .sponsors-title h3 {
+  .sponsors-header h3 {
     font-size: 1.5rem;
   }
 
-  .sponsors-bar {
-    padding: 0.75rem;
-    border-radius: 16px;
+  .sponsors-subtitle {
+    font-size: 0.875rem;
   }
 
-  .sponsors-track {
-    display: grid;
+  .sponsors-grid {
     grid-template-columns: repeat(2, 1fr);
-    gap: 0.4rem;
-    animation: none;
+    gap: 0.75rem;
+    padding: 0 0.75rem;
   }
 
-  .sponsor-pill {
-    min-width: unset;
-    max-width: unset;
-    width: 100%;
-    padding: 0.25rem;
-    border-radius: 0;
-    aspect-ratio: 16 / 9;
-    overflow: hidden;
+  .sponsors-grid .sponsor-card-inner {
+    height: 70px;
+    padding: 0.5rem;
+    border-radius: 12px;
   }
 
-  .sponsor-pill img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
+  .sponsors-grid .sponsor-card figcaption {
+    font-size: 0.7rem;
   }
 
   /* Melhorias gerais para mobile */

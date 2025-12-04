@@ -331,7 +331,10 @@ export function SiteDataProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     async function bootstrap() {
       try {
+        console.log('[SiteDataContext] Fetching site data...')
         const payload = await fetchSiteData()
+        console.log('[SiteDataContext] Received payload:', payload)
+        console.log('[SiteDataContext] Banners from API:', payload.banners)
         setHero(payload.hero)
         setContact(payload.contact)
         setSlides(payload.slides)

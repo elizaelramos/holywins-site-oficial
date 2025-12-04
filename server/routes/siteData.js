@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import multer from 'multer'
 import rateLimit from 'express-rate-limit'
+import sharp from 'sharp'
 import {
   createGalleryItem,
   updateGalleryCover,
@@ -47,14 +48,37 @@ const slideStorage = multer.diskStorage({
 
 const slideUpload = multer({ storage: slideStorage })
 
-const galleryStorage = multer.diskStorage({
-  destination: 'public/images/gallery/',
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`)
-  },
+// Upload para memória para processar com Sharp
+const galleryUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB per file
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true)
+    } else {
+      cb(new Error('Apenas imagens JPEG, JPG, PNG, WEBP e GIF são permitidas.'))
+    }
+  }
 })
 
-const galleryUpload = multer({ storage: galleryStorage })
+// Função para otimizar imagens
+async function optimizeImage(buffer, originalName) {
+  const ext = path.extname(originalName).toLowerCase()
+  const filename = `${Date.now()}-${path.basename(originalName, ext)}.webp`
+  const outputPath = path.join('public/images/gallery', filename)
+  
+  // Converte para WebP com qualidade otimizada
+  await sharp(buffer)
+    .resize(1920, 1920, { 
+      fit: 'inside', 
+      withoutEnlargement: true 
+    })
+    .webp({ quality: 85 })
+    .toFile(outputPath)
+  
+  return filename
+}
 const bannerStorage = multer.diskStorage({
   destination: 'public/images/banners/',
   filename: (req, file, cb) => {
@@ -78,12 +102,35 @@ const bannerUpload = multer({
   },
 })
 
-const communityStorage = multer.diskStorage({
-  destination: 'public/images/communities/',
-  filename: (_req, file, cb) => cb(null, `${Date.now()}-${file.originalname}`),
+// Community upload usa memória para otimização
+const communityUpload = multer({ 
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true)
+    } else {
+      cb(new Error('Apenas imagens JPEG, JPG, PNG e WEBP são permitidas.'))
+    }
+  }
 })
 
-const communityUpload = multer({ storage: communityStorage })
+// Função para otimizar imagens de comunidades (menor)
+async function optimizeCommunityImage(buffer, originalName) {
+  const filename = `${Date.now()}-${path.basename(originalName, path.extname(originalName))}.webp`
+  const outputPath = path.join('public/images/communities', filename)
+  
+  await sharp(buffer)
+    .resize(800, 800, { 
+      fit: 'inside', 
+      withoutEnlargement: true 
+    })
+    .webp({ quality: 80 })
+    .toFile(outputPath)
+  
+  return filename
+}
 
 // Storage for playlist audio files (MP3)
 const audioStorage = multer.diskStorage({
@@ -177,24 +224,61 @@ router.put('/contact', async (req, res, next) => {
   }
 })
 
-router.post('/gallery', galleryUpload.array('images', 20), async (req, res, next) => {
+router.post('/gallery', (req, res, next) => {
+  galleryUpload.array('images', 300)(req, res, (err) => {
+    if (err) {
+      console.error('[Gallery Upload Error]', err)
+      if (err.code === 'LIMIT_UNEXPECTED_FILE') {
+        return res.status(400).json({ message: `Campo inesperado: ${err.field}. Use 'images' como nome do campo.` })
+      }
+      return res.status(400).json({ message: err.message })
+    }
+    next()
+  })
+}, async (req, res, next) => {
   try {
     const { title, description, category } = req.body
     const files = req.files || []
+    
+    console.log('[Gallery Upload]', { title, description, category, filesCount: files.length })
+    
     if (!title || !description || !files.length || !category) {
       return res.status(400).json({ message: 'Preencha título, descrição, imagens e categoria.' })
     }
 
     const createdItems = []
+    
+    // Processar cada imagem com otimização
     for (const file of files) {
-      const image = '/images/gallery/' + file.filename
-      const item = await createGalleryItem({ title, description, image, category })
-      createdItems.push(item)
+      try {
+        const originalSize = (file.buffer.length / 1024 / 1024).toFixed(2)
+        console.log(`[Gallery] Processando ${file.originalname} (${originalSize}MB)`)
+        
+        // Otimizar imagem
+        const filename = await optimizeImage(file.buffer, file.originalname)
+        const imagePath = '/images/gallery/' + filename
+        
+        // Calcular novo tamanho
+        const stats = fs.statSync(path.join('public/images/gallery', filename))
+        const optimizedSize = (stats.size / 1024 / 1024).toFixed(2)
+        const reduction = ((1 - stats.size / file.buffer.length) * 100).toFixed(1)
+        
+        console.log(`[Gallery] Otimizado: ${optimizedSize}MB (redução de ${reduction}%)`)
+        
+        const item = await createGalleryItem({ title, description, image: imagePath, category })
+        createdItems.push(item)
+      } catch (error) {
+        console.error(`[Gallery] Erro ao processar ${file.originalname}:`, error)
+        // Continua processando outras imagens
+      }
     }
 
+    console.log('[Gallery Upload Success]', { itemsCreated: createdItems.length })
+    
     // Return the created items (array) so client can update state
     res.status(201).json(createdItems)
   } catch (error) {
+    console.error('[Gallery Upload Error]', error)
     next(error)
   }
 })
@@ -444,8 +528,21 @@ router.delete('/banners/:id', async (req, res, next) => {
 router.post('/communities', communityUpload.fields([{ name: 'image' }, { name: 'priestPhoto' }]), async (req, res, next) => {
   try {
     const body = { ...req.body }
-    if (req.files?.image?.[0]) body.imageUrl = '/images/communities/' + req.files.image[0].filename
-    if (req.files?.priestPhoto?.[0]) body.priestPhotoUrl = '/images/communities/' + req.files.priestPhoto[0].filename
+    
+    // Otimizar imagem da comunidade
+    if (req.files?.image?.[0]) {
+      const filename = await optimizeCommunityImage(req.files.image[0].buffer, req.files.image[0].originalname)
+      body.imageUrl = '/images/communities/' + filename
+      console.log('[Community] Imagem otimizada:', filename)
+    }
+    
+    // Otimizar foto do pároco
+    if (req.files?.priestPhoto?.[0]) {
+      const filename = await optimizeCommunityImage(req.files.priestPhoto[0].buffer, req.files.priestPhoto[0].originalname)
+      body.priestPhotoUrl = '/images/communities/' + filename
+      console.log('[Community] Foto do pároco otimizada:', filename)
+    }
+    
     // Convert lat/lng strings to numbers if present
     if (body.latitude) body.latitude = Number(body.latitude)
     if (body.longitude) body.longitude = Number(body.longitude)
@@ -651,10 +748,24 @@ router.put('/communities/:id', communityUpload.fields([{ name: 'image' }, { name
     // If a new file is uploaded, remove the previous stored images to avoid orphaned files
     const old = await getCommunityById(id)
     const body = { ...req.body }
-    if (req.files?.image?.[0]) body.imageUrl = '/images/communities/' + req.files.image[0].filename
-    if (req.files?.priestPhoto?.[0]) body.priestPhotoUrl = '/images/communities/' + req.files.priestPhoto[0].filename
+    
+    // Otimizar nova imagem da comunidade
+    if (req.files?.image?.[0]) {
+      const filename = await optimizeCommunityImage(req.files.image[0].buffer, req.files.image[0].originalname)
+      body.imageUrl = '/images/communities/' + filename
+      console.log('[Community Update] Imagem otimizada:', filename)
+    }
+    
+    // Otimizar nova foto do pároco
+    if (req.files?.priestPhoto?.[0]) {
+      const filename = await optimizeCommunityImage(req.files.priestPhoto[0].buffer, req.files.priestPhoto[0].originalname)
+      body.priestPhotoUrl = '/images/communities/' + filename
+      console.log('[Community Update] Foto do pároco otimizada:', filename)
+    }
+    
     if (body.latitude) body.latitude = Number(body.latitude)
     if (body.longitude) body.longitude = Number(body.longitude)
+    
     // Delete previous image files if they exist and were replaced
     try {
       if (old) {
