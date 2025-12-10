@@ -8,12 +8,8 @@ export default function Contact() {
     <div className="page-stack">
       <section className="page-card contact-hero reveal-on-scroll">
         <div>
+          <h1>Contato</h1>
           <p className="eyebrow">Fale conosco</p>
-          <h1>Conecte sua pastoral ao Holywins</h1>
-          <p>
-            Use os canais oficiais para tirar dúvidas sobre voluntariado, caravanas e apoio às atividades de evangelização
-            nas ruas.
-          </p>
           <ul className="contact-list">
             <li>
               <span>Telefone</span>
