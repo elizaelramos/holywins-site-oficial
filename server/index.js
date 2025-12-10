@@ -57,12 +57,19 @@ app.use(
     secret: process.env.SESSION_SECRET || 'holywins-secret-change-in-production',
     resave: false,
     saveUninitialized: false,
-    cookie: {
-      secure: process.env.NODE_ENV === 'production', // HTTPS only in production
-      httpOnly: true,
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-      sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
-    },
+    cookie: (() => {
+      const secure = process.env.NODE_ENV === 'production'
+      // Allow overriding SameSite via env var SESSION_SAMESITE (e.g. 'none', 'lax', 'strict')
+      const sameSite = (process.env.SESSION_SAMESITE || (process.env.NODE_ENV === 'production' ? 'strict' : 'lax'))
+      return {
+        secure,
+        httpOnly: true,
+        // Allow overriding cookie domain via env var (ex: '.holywinscorumba.com')
+        domain: process.env.SESSION_COOKIE_DOMAIN || undefined,
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        sameSite,
+      }
+    })(),
   })
 )
 
