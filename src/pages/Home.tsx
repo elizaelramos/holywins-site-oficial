@@ -4,6 +4,7 @@ import { useSiteData } from '../context/SiteDataContext.tsx'
 import { useEffect, useState } from 'react'
 import ContactForm from '../components/ContactForm.tsx'
 import PlaylistCarousel from '../components/PlaylistCarousel.tsx'
+import PromoSpotlight from '../components/PromoSpotlight.tsx'
 
 const highlights = [
   {
@@ -69,6 +70,12 @@ export default function Home() {
   return (
     <>
       <BannerCarousel banners={banners} />
+
+      <PromoSpotlight
+        imageSrc="/images/Arte_Promoção_Carreteiro_2026.jpeg"
+        title="Promoção de Carreteiro 2026"
+        description="Participe! Compartilhe com seus amigos e familiares."
+      />
 
       <section className="moments-section">
         <h2 className="moments-title">
