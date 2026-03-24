@@ -8,8 +8,8 @@ interface PromoSpotlightProps {
 
 export default function PromoSpotlight({
   imageSrc,
-  title = 'Promoção de Carreteiro 2026',
-  description = 'Participe! Compartilhe com seus amigos e familiares.',
+  title = 'Holywins — A Santidade Vence!',
+  description = 'O evento que une fé, alegria e comunidade. Venha fazer parte do Holywins!',
 }: PromoSpotlightProps) {
   const [modalOpen, setModalOpen] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -21,7 +21,8 @@ export default function PromoSpotlight({
       ? `${window.location.origin}${imageSrc}`
       : imageSrc
 
-  const shareText = `${title}\n${description}`
+  const shareText = `😇 *${title}*\n${description}`
+  const whatsappMsg = `😇 *${title}*\n${description}\n\n👉 ${pageUrl}`
 
   useEffect(() => {
     setCanNativeShare(typeof navigator !== 'undefined' && !!navigator.share)
@@ -54,13 +55,13 @@ export default function PromoSpotlight({
       const file = await shareImageFile()
       if (file && navigator.canShare?.({ files: [file] })) {
         await navigator.share({
-          title,
+          title: `😇 ${title}`,
           text: description,
           files: [file],
         })
       } else {
         await navigator.share({
-          title,
+          title: `😇 ${title}`,
           text: shareText,
           url: pageUrl,
         })
@@ -71,7 +72,7 @@ export default function PromoSpotlight({
   }
 
   const shareWhatsApp = () => {
-    const msg = encodeURIComponent(`${shareText}\n${pageUrl}`)
+    const msg = encodeURIComponent(whatsappMsg)
     window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank', 'noopener,noreferrer')
   }
 

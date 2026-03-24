@@ -2,6 +2,7 @@ import BannerCarousel from '../components/BannerCarousel.tsx'
 import InstagramEmbed from '../components/InstagramEmbed.tsx'
 import { useSiteData } from '../context/SiteDataContext.tsx'
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import ContactForm from '../components/ContactForm.tsx'
 import PlaylistCarousel from '../components/PlaylistCarousel.tsx'
 import PromoSpotlight from '../components/PromoSpotlight.tsx'
@@ -31,6 +32,8 @@ const schedule = [
   { time: '21h00', title: 'Música', description: 'Show com Coral de Ladário' },
   { time: '22h30', title: 'Premiação e Mais Música', description: 'Grupo da Paróquia e bênção final' },
 ]
+
+const showPromoSpotlight = false
 
 export default function Home() {
   const { hero, banners } = useSiteData()
@@ -71,11 +74,13 @@ export default function Home() {
     <>
       <BannerCarousel banners={banners} />
 
-      <PromoSpotlight
-        imageSrc="/images/Arte_Promoção_Carreteiro_2026.jpeg"
-        title="Promoção de Carreteiro 2026"
-        description="Participe! Compartilhe com seus amigos e familiares."
-      />
+      {showPromoSpotlight ? (
+        <PromoSpotlight
+          imageSrc="/images/Arte_Promoção_Carreteiro_2026.jpeg"
+          title="Holywins — A Santidade Vence!"
+          description="O evento que une fé, alegria e comunidade. Venha fazer parte do Holywins!"
+        />
+      ) : null}
 
       <section className="moments-section">
         <h2 className="moments-title">
@@ -92,19 +97,19 @@ export default function Home() {
               const hover = entry.images?.[2] ?? ''
               const href = entry.link || '/galeria'
               return (
-                <a key={entry.id} href={href} className="moment-card">
+                <Link key={entry.id} to={href} className="moment-card">
                   {bg ? <div className="moment-bg" style={{ backgroundImage: `url(${bg})` }} /> : <div className="moment-bg" />}
                   {front && <div className="moment-front" style={{ backgroundImage: `url(${front})` }} />}
                   {hover && <div className="moment-hover" style={{ backgroundImage: `url(${hover})` }} />}
-                </a>
+                </Link>
               )
             })
           ) : (
             // fallback to static assets (keep a single 3-card fallback)
             [1,2,3].map((i) => (
-              <a key={i} href="/galeria" className="moment-card">
+              <Link key={i} to="/galeria" className="moment-card">
                 <div className="moment-bg" style={{ backgroundImage: `url(/images/gallery/moment${i}-bg.png)` }} />
-              </a>
+              </Link>
             ))
           )}
         </div>
