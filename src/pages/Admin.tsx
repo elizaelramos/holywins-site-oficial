@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useMemo, useState } from 'react'
+import { type FormEvent, type ReactNode, useEffect, useMemo, useState } from 'react'
 import { useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import L from 'leaflet'
@@ -112,7 +112,7 @@ export default function Admin() {
   const [momentsVersion, setMomentsVersion] = useState(0)
   const [playlistVersion, setPlaylistVersion] = useState(0)
   // Top-level tab for separate admin sections
-  type TabName = 'content' | 'gallery' | 'slides' | 'playlist' | 'sponsors' | 'banners' | 'messages' | 'igrejas'
+  type TabName = 'content' | 'gallery' | 'slides' | 'playlist' | 'sponsors' | 'banners' | 'messages' | 'igrejas' | 'inscricoes'
   const [activeTab, setActiveTab] = useState<TabName>('content')
 
   useEffect(() => {
@@ -749,6 +749,17 @@ export default function Admin() {
     )
   }
 
+  const backToAdminHome = (
+    <button
+      type="button"
+      className="ghost-btn"
+      onClick={() => setActiveTab('content')}
+      style={{ marginBottom: '1rem', fontSize: '0.875rem', padding: '0.5rem 1rem' }}
+    >
+      ← Voltar
+    </button>
+  )
+
   return (
     <>
       {/* Admin Navigation Bar */}
@@ -877,6 +888,15 @@ export default function Admin() {
         >
           Mensagens
         </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'inscricoes'}
+          className={`admin-tab ${activeTab === 'inscricoes' ? 'admin-tab--active' : ''}`}
+          onClick={() => setActiveTab('inscricoes')}
+        >
+          Inscrições
+        </button>
       </div>
 
       <section className="page-card" style={{ display: activeTab === 'gallery' ? undefined : 'none' }}>
@@ -896,6 +916,14 @@ export default function Admin() {
 
       {activeTab === 'content' && (
         <section className="page-card admin-grid">
+        <button
+          type="button"
+          className="ghost-btn"
+          onClick={() => navigate('/')}
+          style={{ marginBottom: '1rem', fontSize: '0.875rem', padding: '0.5rem 1rem', gridColumn: '1 / -1', justifySelf: 'start' }}
+        >
+          ← Voltar
+        </button>
         <form onSubmit={handleHeroSubmit}>
           <p className="eyebrow">Hero</p>
           <h2>Chamada principal</h2>
@@ -1005,6 +1033,7 @@ export default function Admin() {
       )}
     {activeTab === 'gallery' && (
       <section className="page-card">
+        {backToAdminHome}
         <p className="eyebrow">Galeria</p>
         <h2>Adicionar nova galeria</h2>
         <form className="gallery-form" onSubmit={handleGallerySubmit}>
@@ -1189,6 +1218,7 @@ export default function Admin() {
 
       {activeTab === 'slides' && (
         <section className="page-card">
+          {backToAdminHome}
           <p className="eyebrow">Link Rápido</p>
           <h2>Gerenciar seção "RELEMBRE OS MOMENTOS MARCANTES"</h2>
           <p>Envie até 3 imagens PNG (.png) e um link opcional que a seção usará.</p>
@@ -1266,6 +1296,7 @@ export default function Admin() {
 
       {activeTab === 'playlist' && (
         <section className="page-card">
+          {backToAdminHome}
           <p className="eyebrow">Playlist</p>
           <h2>Gerenciar Playlist Holywins</h2>
           <p>Adicione músicas à playlist: título, link público do YouTube (opcional) e arquivo MP3.</p>
@@ -1322,6 +1353,7 @@ export default function Admin() {
 
       {activeTab === 'sponsors' && (
         <section className="page-card">
+        {backToAdminHome}
         <p className="eyebrow">Patrocinadores</p>
         <h2>Gerencie o carrossel de logos</h2>
         <form className="gallery-form" onSubmit={handleSponsorSubmit} encType="multipart/form-data">
@@ -1366,6 +1398,7 @@ export default function Admin() {
       )}
       {activeTab === 'banners' && !isCreatingBanner && (
         <section className="page-card">
+          {backToAdminHome}
           <p className="eyebrow">Banners</p>
           <h2>Gerencie os banners do site</h2>
           <p>
@@ -1478,6 +1511,7 @@ export default function Admin() {
 
       {activeTab === 'igrejas' && (
         <section className="page-card">
+          {backToAdminHome}
           <p className="eyebrow">Igrejas</p>
           <h2>Gerenciar igrejas</h2>
           <form onSubmit={handleAddCommunity} className="gallery-form">
@@ -1691,6 +1725,7 @@ export default function Admin() {
       )}
       {activeTab === 'messages' && (
         <section className="page-card">
+        {backToAdminHome}
         <p className="eyebrow">Contatos</p>
         <h2>Mensagens recebidas</h2>
         <div className="gallery-admin-list" style={{ marginTop: '1.5rem' }}>
@@ -1724,7 +1759,137 @@ export default function Admin() {
         </div>
         </section>
       )}
+      {activeTab === 'inscricoes' && (
+        <InscricoesPanel backButton={backToAdminHome} />
+      )}
     </div>
     </>
+  )
+}
+
+type InscricoesItem = {
+  id: number
+  codigo: string
+  nome: string
+  email: string
+  telefone: string
+  paroquia: string | null
+  createdAt: string
+  participantes: Array<{
+    id: number
+    nome: string
+    idade: number | null
+    tamanhoCamiseta: string | null
+    participaDesfile: boolean
+    restricaoAlimentar: string | null
+    movimento: string | null
+    santoDevocao: string | null
+  }>
+}
+
+function InscricoesPanel({ backButton }: { backButton: ReactNode }) {
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
+  const [inscricoes, setInscricoes] = useState<InscricoesItem[]>([])
+  const [loading, setLoading] = useState(true)
+  const [err, setErr] = useState('')
+
+  const reload = async () => {
+    setLoading(true)
+    try {
+      const resp = await fetch(`${apiUrl}/inscricoes`, { credentials: 'include' })
+      if (!resp.ok) throw new Error('Falha ao carregar inscrições')
+      setInscricoes(await resp.json())
+      setErr('')
+    } catch (e: any) {
+      setErr(e?.message ?? 'Erro')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { reload() }, [])
+
+  const totalParticipantes = inscricoes.reduce((sum, r) => sum + r.participantes.length, 0)
+
+  const exportarCsv = () => {
+    const header = ['Codigo', 'Responsavel', 'Email', 'Telefone', 'Paroquia', 'Participante', 'Idade', 'Camiseta', 'Desfile', 'Restricao', 'Movimento', 'Devocao', 'CriadoEm']
+    const rows = [header.join(',')]
+    for (const r of inscricoes) {
+      for (const p of r.participantes) {
+        const line = [
+          r.codigo, r.nome, r.email, r.telefone, r.paroquia ?? '',
+          p.nome, p.idade ?? '', p.tamanhoCamiseta ?? '',
+          p.participaDesfile ? 'sim' : 'nao',
+          p.restricaoAlimentar ?? '', p.movimento ?? '', p.santoDevocao ?? '',
+          r.createdAt,
+        ].map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',')
+        rows.push(line)
+      }
+    }
+    const blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `inscricoes-holywins-${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const remover = async (id: number) => {
+    if (!confirm('Remover esta inscrição e todos os participantes vinculados?')) return
+    await fetch(`${apiUrl}/inscricoes/${id}`, { method: 'DELETE', credentials: 'include' })
+    await reload()
+  }
+
+  return (
+    <section className="page-card">
+      {backButton}
+      <p className="eyebrow">Inscrições</p>
+      <h2>Gerenciar inscrições</h2>
+      <p style={{ opacity: 0.8 }}>
+        <strong>{inscricoes.length}</strong> responsável(eis), <strong>{totalParticipantes}</strong> participante(s) no total.
+      </p>
+      <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem' }}>
+        <button type="button" className="ghost-btn" onClick={reload}>Recarregar</button>
+        <button type="button" className="ghost-btn" onClick={exportarCsv} disabled={!inscricoes.length}>Exportar CSV</button>
+      </div>
+
+      {err && <p style={{ color: '#fca5a5' }}>{err}</p>}
+      {loading ? <p>Carregando...</p> : !inscricoes.length ? <p>Nenhuma inscrição ainda.</p> : (
+        <div className="gallery-admin-list">
+          {inscricoes.map((r) => (
+            <div key={r.id} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, padding: '1rem', marginBottom: '0.75rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+                <div>
+                  <div style={{ fontFamily: 'monospace', color: 'var(--text-muted)', fontSize: '0.75rem' }}>{r.codigo}</div>
+                  <strong>{r.nome}</strong>
+                  <div style={{ fontSize: '0.875rem', opacity: 0.8 }}>
+                    {r.email} · {r.telefone}{r.paroquia ? ` · ${r.paroquia}` : ''}
+                  </div>
+                  <div style={{ fontSize: '0.75rem', opacity: 0.6, marginTop: '0.25rem' }}>
+                    {new Date(r.createdAt).toLocaleString('pt-BR')}
+                  </div>
+                </div>
+                <button type="button" className="ghost-btn" onClick={() => remover(r.id)} style={{ color: '#fca5a5' }}>Remover</button>
+              </div>
+              <details style={{ marginTop: '0.75rem' }}>
+                <summary style={{ cursor: 'pointer', fontSize: '0.875rem' }}>{r.participantes.length} participante(s)</summary>
+                <ul style={{ margin: '0.5rem 0 0 1.25rem', padding: 0 }}>
+                  {r.participantes.map((p) => (
+                    <li key={p.id} style={{ fontSize: '0.875rem', marginBottom: '0.25rem' }}>
+                      <strong>{p.nome}</strong>
+                      {p.idade != null && <> · {p.idade} anos</>}
+                      {p.tamanhoCamiseta && <> · {p.tamanhoCamiseta}</>}
+                      {p.participaDesfile && <> · desfile</>}
+                      {p.restricaoAlimentar && <> · restr: {p.restricaoAlimentar}</>}
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
   )
 }

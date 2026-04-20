@@ -5,6 +5,7 @@ import Gallery from './pages/Gallery.tsx'
 import Communities from './pages/Communities.tsx'
 import SantoDoDia from './pages/SantoDoDia.tsx'
 import Contact from './pages/Contact.tsx'
+import Inscricoes from './pages/Inscricoes.tsx'
 import Admin from './pages/Admin.tsx'
 import AdminUsers from './pages/AdminUsers.tsx'
 import AdminLogs from './pages/AdminLogs.tsx'
@@ -83,6 +84,7 @@ function App() {
           <Route path="/comunidades" element={<Communities />} />
           <Route path="/santo-do-dia" element={<SantoDoDia />} />
           <Route path="/contato" element={<Contact />} />
+          <Route path="/inscricoes" element={<Inscricoes />} />
           <Route path="/login" element={<Login />} />
           <Route
             path="/admin"

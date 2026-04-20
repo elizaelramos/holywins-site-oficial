@@ -8,6 +8,7 @@ import siteDataRoutes from './routes/siteData.js'
 import authRoutes from './routes/auth.js'
 import usersRoutes from './routes/users.js'
 import logsRoutes from './routes/logs.js'
+import inscricoesRoutes from './routes/inscricoes.js'
 
 const app = express()
 // When the app is behind a reverse proxy (nginx, load balancer), enable trust proxy
@@ -86,6 +87,7 @@ app.get('/health', (_req, res) => {
 app.use('/api/auth', authRoutes)
 app.use('/api/users', usersRoutes)
 app.use('/api/logs', logsRoutes)
+app.use('/api/inscricoes', inscricoesRoutes)
 app.use('/api', siteDataRoutes)
 
 app.use((err, _req, res, _next) => {

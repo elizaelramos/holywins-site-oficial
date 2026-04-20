@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
 
@@ -23,6 +25,7 @@ interface Pagination {
 }
 
 export default function AdminLogs() {
+  const navigate = useNavigate()
   const [logs, setLogs] = useState<ActivityLog[]>([])
   const [pagination, setPagination] = useState<Pagination>({
     page: 1,
@@ -128,6 +131,26 @@ export default function AdminLogs() {
   return (
     <div className="page-stack">
       <section className="page-card">
+        <button
+          onClick={() => navigate(-1)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            background: 'none',
+            border: 'none',
+            color: 'var(--text-muted)',
+            cursor: 'pointer',
+            marginBottom: '1rem',
+            padding: 0,
+            fontSize: '0.875rem',
+          }}
+          onMouseOver={(e) => (e.currentTarget.style.color = 'var(--text)')}
+          onMouseOut={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
+        >
+          <ArrowLeft size={16} />
+          Voltar
+        </button>
         <div style={{ marginBottom: '2rem' }}>
           <p className="eyebrow">Sistema</p>
           <h1>Logs de Atividade</h1>

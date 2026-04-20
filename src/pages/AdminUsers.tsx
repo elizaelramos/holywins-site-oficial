@@ -1,4 +1,6 @@
 import { useState, useEffect, FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
 import { useAuth } from '../hooks/useAuth'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
@@ -14,6 +16,7 @@ interface User {
 }
 
 export default function AdminUsers() {
+  const navigate = useNavigate()
   const { user: currentUser } = useAuth()
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
@@ -169,6 +172,26 @@ export default function AdminUsers() {
   return (
     <div className="page-stack">
       <section className="page-card">
+        <button
+          onClick={() => navigate(-1)}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            background: 'none',
+            border: 'none',
+            color: 'var(--text-muted)',
+            cursor: 'pointer',
+            marginBottom: '1rem',
+            padding: 0,
+            fontSize: '0.875rem',
+          }}
+          onMouseOver={(e) => (e.currentTarget.style.color = 'var(--text)')}
+          onMouseOut={(e) => (e.currentTarget.style.color = 'var(--text-muted)')}
+        >
+          <ArrowLeft size={16} />
+          Voltar
+        </button>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
           <div>
             <p className="eyebrow">Gerenciamento</p>

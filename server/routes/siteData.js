@@ -25,6 +25,7 @@ import {
   deleteBanner,
   getCommunityById,
 } from '../siteDataService.js'
+import { notifyNewMessage } from '../notifyTelegram.js'
 import fs from 'fs'
 import path from 'path'
 
@@ -304,6 +305,8 @@ router.post('/messages', messageLimiter, async (req, res, next) => {
       ip: req.ip,
       userAgent: req.headers['user-agent'] ?? null,
     })
+
+    notifyNewMessage(created).catch(() => {})
 
     res.status(201).json(created)
   } catch (error) {
