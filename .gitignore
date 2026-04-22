@@ -29,3 +29,11 @@ server/public/
 *.njsproj
 *.sln
 *.sw?
+
+# Runtime artifacts
+*.pid
+.cookie
+backups/
+
+# Claude Code local settings
+.claude/settings.local.json
