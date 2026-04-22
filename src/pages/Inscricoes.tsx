@@ -11,7 +11,6 @@ type Participante = {
   movimento: string
   restricaoAlimentar: string
   santoDevocao: string
-  tamanhoCamiseta: string
   participaDesfile: 'sim' | 'nao' | ''
   autorizaImagem: boolean
   eResponsavel: boolean
@@ -45,14 +44,12 @@ function novoParticipante(resp?: Responsavel): Participante {
     movimento: '',
     restricaoAlimentar: '',
     santoDevocao: '',
-    tamanhoCamiseta: '',
     participaDesfile: '',
     autorizaImagem: true,
     eResponsavel: false,
   }
 }
 
-const tamanhosCamiseta = ['PP', 'P', 'M', 'G', 'GG', 'XG', 'Infantil P', 'Infantil M', 'Infantil G']
 const comoSoubeOpcoes = [
   'Facebook',
   'Instagram',
@@ -328,15 +325,6 @@ export default function Inscricoes() {
                   <input value={p.santoDevocao} onChange={(e) => updatePart(i, { santoDevocao: e.target.value })} />
                 </label>
                 <label>
-                  Tamanho da camiseta
-                  <select value={p.tamanhoCamiseta} onChange={(e) => updatePart(i, { tamanhoCamiseta: e.target.value })}>
-                    <option value="">Selecione...</option>
-                    {tamanhosCamiseta.map((t) => (
-                      <option key={t} value={t}>{t}</option>
-                    ))}
-                  </select>
-                </label>
-                <label>
                   Pretende participar do concurso de caracterização (desfile)?*
                   <select
                     value={p.participaDesfile}
@@ -378,7 +366,6 @@ export default function Inscricoes() {
             <div key={i} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, padding: '0.75rem 1rem', marginBottom: '0.5rem' }}>
               <strong>{p.nome}</strong>
               {p.idade && <> · {p.idade} anos</>}
-              {p.tamanhoCamiseta && <> · camiseta {p.tamanhoCamiseta}</>}
               {p.participaDesfile === 'sim' && <> · desfile</>}
               {p.restricaoAlimentar && <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>Restrição: {p.restricaoAlimentar}</div>}
             </div>
