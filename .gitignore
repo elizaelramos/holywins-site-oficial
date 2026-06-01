@@ -19,6 +19,9 @@ public/images/
 public/audio/
 server/public/
 
+# Planilhas com códigos/senhas dos vídeos (dados sensíveis)
+*.xlsx
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

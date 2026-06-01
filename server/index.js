@@ -9,6 +9,8 @@ import authRoutes from './routes/auth.js'
 import usersRoutes from './routes/users.js'
 import logsRoutes from './routes/logs.js'
 import inscricoesRoutes from './routes/inscricoes.js'
+import videosRoutes from './routes/videos.js'
+import { startTelegramBot } from './telegramBot.js'
 
 const app = express()
 // When the app is behind a reverse proxy (nginx, load balancer), enable trust proxy
@@ -88,6 +90,7 @@ app.use('/api/auth', authRoutes)
 app.use('/api/users', usersRoutes)
 app.use('/api/logs', logsRoutes)
 app.use('/api/inscricoes', inscricoesRoutes)
+app.use('/api/videos', videosRoutes)
 app.use('/api', siteDataRoutes)
 
 app.use((err, _req, res, _next) => {
@@ -98,4 +101,5 @@ app.use((err, _req, res, _next) => {
 
 app.listen(port, () => {
   console.log(`API Holywins ouvindo em http://localhost:${port}`)
+  startTelegramBot()
 })

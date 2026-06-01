@@ -10,6 +10,8 @@ import Admin from './pages/Admin.tsx'
 import AdminUsers from './pages/AdminUsers.tsx'
 import AdminLogs from './pages/AdminLogs.tsx'
 import AdminProfile from './pages/AdminProfile.tsx'
+import AdminVideos from './pages/AdminVideos.tsx'
+import Videos from './pages/Videos.tsx'
 import Login from './pages/Login.tsx'
 import ProtectedRoute from './components/ProtectedRoute.tsx'
 import SponsorsBar from './components/SponsorsBar.tsx'
@@ -85,6 +87,7 @@ function App() {
           <Route path="/santo-do-dia" element={<SantoDoDia />} />
           <Route path="/contato" element={<Contact />} />
           <Route path="/inscricoes" element={<Inscricoes />} />
+          <Route path="/v" element={<Videos />} />
           <Route path="/login" element={<Login />} />
           <Route
             path="/admin"
@@ -115,6 +118,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <AdminProfile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/videos"
+            element={
+              <ProtectedRoute>
+                <AdminVideos />
               </ProtectedRoute>
             }
           />

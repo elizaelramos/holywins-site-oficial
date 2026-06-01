@@ -34,6 +34,36 @@ async function sendTelegram(text) {
   }
 }
 
+// Envia uma mensagem de texto simples para um chat específico (usado pelo bot
+// para responder aos comandos recebidos). Sem MarkdownV2 para evitar escaping.
+export async function sendChatMessage(chatId, text, { replyToMessageId } = {}) {
+  const token = process.env.TELEGRAM_BOT_TOKEN
+  if (!token || !chatId) return
+
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 5000)
+  try {
+    const res = await fetch(`${TELEGRAM_API}/bot${token}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text,
+        disable_web_page_preview: true,
+        ...(replyToMessageId ? { reply_to_message_id: replyToMessageId } : {}),
+      }),
+      signal: controller.signal,
+    })
+    if (!res.ok) {
+      console.error('[telegram] sendChatMessage falhou', res.status, await res.text())
+    }
+  } catch (err) {
+    console.error('[telegram] erro ao responder', err?.message ?? err)
+  } finally {
+    clearTimeout(timeout)
+  }
+}
+
 export async function notifyNewMessage(message) {
   const lines = [
     '*Novo contato no site Holywins*',

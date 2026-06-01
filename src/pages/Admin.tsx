@@ -787,6 +787,9 @@ export default function Admin() {
               <Link to="/admin" className="ghost-btn" style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}>
                 Conteúdo
               </Link>
+              <Link to="/admin/videos" className="ghost-btn" style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}>
+                Vídeos
+              </Link>
               {isAdmin && (
                 <>
                   <Link to="/admin/users" className="ghost-btn" style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}>

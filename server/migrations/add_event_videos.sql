@@ -1,0 +1,16 @@
+CREATE TABLE IF NOT EXISTS event_videos (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  codigo VARCHAR(20) NOT NULL UNIQUE,
+  senha VARCHAR(64) NOT NULL,
+  source_url VARCHAR(500) DEFAULT NULL,
+  video_url VARCHAR(1000) DEFAULT NULL,
+  status VARCHAR(16) NOT NULL DEFAULT 'pendente',
+  observacao VARCHAR(255) DEFAULT NULL,
+  unlock_count INT NOT NULL DEFAULT 0,
+  last_unlocked_at TIMESTAMP NULL DEFAULT NULL,
+  created_by INT DEFAULT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_event_videos_status (status),
+  INDEX idx_event_videos_created (created_at)
+);
