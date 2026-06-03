@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link, NavLink, Route, Routes } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, NavLink, Route, Routes, useLocation } from 'react-router-dom'
 import Home from './pages/Home.tsx'
 import Gallery from './pages/Gallery.tsx'
 import Communities from './pages/Communities.tsx'
@@ -12,9 +12,12 @@ import AdminLogs from './pages/AdminLogs.tsx'
 import AdminProfile from './pages/AdminProfile.tsx'
 import AdminVideos from './pages/AdminVideos.tsx'
 import Videos from './pages/Videos.tsx'
+import AdminAnalytics from './pages/AdminAnalytics.tsx'
+import AdminSecurity from './pages/AdminSecurity.tsx'
 import Login from './pages/Login.tsx'
 import ProtectedRoute from './components/ProtectedRoute.tsx'
 import SponsorsBar from './components/SponsorsBar.tsx'
+import { trackPageView } from './services/analytics.ts'
 
 const routes = [
   { path: '/', label: 'Início', showInNav: true },
@@ -28,6 +31,11 @@ const routes = [
 
 function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const location = useLocation()
+
+  useEffect(() => {
+    trackPageView(location.pathname, location.search)
+  }, [location.pathname, location.search])
 
   return (
     <div className="app-shell">
@@ -126,6 +134,22 @@ function App() {
             element={
               <ProtectedRoute>
                 <AdminVideos />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/analytics"
+            element={
+              <ProtectedRoute requireAdmin>
+                <AdminAnalytics />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/security"
+            element={
+              <ProtectedRoute requireAdmin>
+                <AdminSecurity />
               </ProtectedRoute>
             }
           />

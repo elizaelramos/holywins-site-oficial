@@ -19,6 +19,7 @@
     "express": "^5.0.1",
     "express-rate-limit": "^8.2.1",
     "express-session": "^1.18.2",
+    "geoip-lite": "^1.4.10",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.553.0",
     "multer": "^2.0.2",

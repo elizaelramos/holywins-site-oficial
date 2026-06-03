@@ -10,6 +10,9 @@ import usersRoutes from './routes/users.js'
 import logsRoutes from './routes/logs.js'
 import inscricoesRoutes from './routes/inscricoes.js'
 import videosRoutes from './routes/videos.js'
+import analyticsRoutes from './routes/analytics.js'
+import requestLogger from './middleware/requestLogger.js'
+import { rollupAndPurge } from './analyticsService.js'
 import { startTelegramBot } from './telegramBot.js'
 
 const app = express()
@@ -81,11 +84,15 @@ app.use('/images', express.static(path.join(process.cwd(), 'public', 'images')))
 // Also serve images that may exist under the server folder (some uploads ended up here)
 app.use('/images', express.static(path.join(process.cwd(), 'server', 'public', 'images')))
 
+// Log every request for traffic + security monitoring (fire-and-forget)
+app.use(requestLogger)
+
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok' })
 })
 
 // Routes
+app.use('/api/analytics', analyticsRoutes)
 app.use('/api/auth', authRoutes)
 app.use('/api/users', usersRoutes)
 app.use('/api/logs', logsRoutes)
@@ -102,4 +109,8 @@ app.use((err, _req, res, _next) => {
 app.listen(port, () => {
   console.log(`API Holywins ouvindo em http://localhost:${port}`)
   startTelegramBot()
+
+  // Daily rollup of analytics aggregates + purge of raw data older than 90 days
+  rollupAndPurge()
+  setInterval(rollupAndPurge, 24 * 60 * 60 * 1000)
 })

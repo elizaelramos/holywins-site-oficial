@@ -795,6 +795,12 @@ export default function Admin() {
                   <Link to="/admin/users" className="ghost-btn" style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}>
                     Usuários
                   </Link>
+                  <Link to="/admin/analytics" className="ghost-btn" style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}>
+                    Analytics
+                  </Link>
+                  <Link to="/admin/security" className="ghost-btn" style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}>
+                    Segurança
+                  </Link>
                   <Link to="/admin/logs" className="ghost-btn" style={{ fontSize: '0.875rem', padding: '0.5rem 1rem' }}>
                     Logs
                   </Link>
