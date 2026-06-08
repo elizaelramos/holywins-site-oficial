@@ -26,6 +26,7 @@ interface SecurityOverview {
   errors5xx: number
   uniqueIps: number
   byType: LabelTotal[]
+  bySource: { label: string; total: number; threats: number }[]
   topIps: TopIp[]
   timeline: { day: string; requests: number; threats: number }[]
 }
@@ -39,6 +40,7 @@ interface SecurityEvent {
   user_agent: string
   threat_type: string
   country: string | null
+  source: string
   created_at: string
 }
 
@@ -66,6 +68,24 @@ const THREAT_LABELS: Record<string, string> = {
 
 function labelThreat(t: string) {
   return THREAT_LABELS[t] || t
+}
+
+function sourceBadge(s: string) {
+  const isNginx = s === 'nginx'
+  return (
+    <span
+      style={{
+        padding: '0.15rem 0.45rem',
+        borderRadius: '4px',
+        background: isNginx ? 'rgba(168,139,250,0.18)' : 'rgba(96,165,250,0.18)',
+        color: isNginx ? '#c4b5fd' : '#93c5fd',
+        fontSize: '0.7rem',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {isNginx ? 'Nginx' : 'Express'}
+    </span>
+  )
 }
 
 function isoDate(d: Date) {
@@ -121,6 +141,7 @@ export default function AdminSecurity() {
   const [pagination, setPagination] = useState<Pagination>({ page: 1, limit: 50, total: 0, totalPages: 0 })
   const [typeFilter, setTypeFilter] = useState('')
   const [ipFilter, setIpFilter] = useState('')
+  const [sourceFilter, setSourceFilter] = useState('')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -136,7 +157,8 @@ export default function AdminSecurity() {
       setLoading(true)
       setError('')
       try {
-        const res = await fetch(`${API_URL}/analytics/security/overview?from=${range.from}&to=${range.to}`, { credentials: 'include' })
+        const sp = sourceFilter ? `&source=${sourceFilter}` : ''
+        const res = await fetch(`${API_URL}/analytics/security/overview?from=${range.from}&to=${range.to}${sp}`, { credentials: 'include' })
         if (!res.ok) throw new Error('Erro ao carregar visão de segurança')
         const data = await res.json()
         if (!cancelled) setOverview(data)
@@ -150,7 +172,7 @@ export default function AdminSecurity() {
     return () => {
       cancelled = true
     }
-  }, [range])
+  }, [range, sourceFilter])
 
   useEffect(() => {
     let cancelled = false
@@ -164,6 +186,7 @@ export default function AdminSecurity() {
         })
         if (typeFilter) params.append('type', typeFilter)
         if (ipFilter) params.append('ip', ipFilter)
+        if (sourceFilter) params.append('source', sourceFilter)
         const res = await fetch(`${API_URL}/analytics/security/events?${params}`, { credentials: 'include' })
         if (!res.ok) throw new Error('Erro ao carregar eventos')
         const data = await res.json()
@@ -178,7 +201,7 @@ export default function AdminSecurity() {
     return () => {
       cancelled = true
     }
-  }, [pagination.page, pagination.limit, typeFilter, ipFilter, range])
+  }, [pagination.page, pagination.limit, typeFilter, ipFilter, sourceFilter, range])
 
   const exportCsv = () => {
     window.open(`${API_URL}/analytics/export?type=security-events&from=${range.from}&to=${range.to}`, '_blank')
@@ -236,6 +259,34 @@ export default function AdminSecurity() {
               <StatCard icon={<Globe size={16} />} label="IPs distintos" value={formatNumber(overview?.uniqueIps ?? 0)} />
               <StatCard icon={<AlertTriangle size={16} />} label="Erros 4xx" value={formatNumber(overview?.errors4xx ?? 0)} color="#fde047" />
               <StatCard icon={<ServerCrash size={16} />} label="Erros 5xx" value={formatNumber(overview?.errors5xx ?? 0)} color="#fca5a5" />
+            </div>
+
+            {/* Coverage by source */}
+            <div style={{ ...card, marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <h3 style={{ margin: 0, fontSize: '1rem' }}>Cobertura por fonte</h3>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                  Express = API · Nginx = todo o servidor (estáticos, SPA, sondagens na raiz)
+                </span>
+              </div>
+              {(overview?.bySource.length ?? 0) === 0 ? (
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: 0 }}>
+                  Apenas a API (Express) está sendo monitorada. Para capturar bots que batem direto no servidor,
+                  habilite a ingestão do log do nginx (ver fonte "Nginx").
+                </p>
+              ) : (
+                <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', marginTop: '0.75rem' }}>
+                  {overview!.bySource.map((s) => (
+                    <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      {sourceBadge(s.label)}
+                      <span style={{ fontSize: '0.9rem' }}>
+                        {formatNumber(s.total)} reqs
+                        <span style={{ color: 'var(--text-muted)' }}> · {formatNumber(s.threats)} ameaças</span>
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Threats by type + top IPs */}
@@ -305,14 +356,23 @@ export default function AdminSecurity() {
                       <option key={t} value={t}>{labelThreat(t)}</option>
                     ))}
                   </select>
+                  <select
+                    value={sourceFilter}
+                    onChange={(e) => { setSourceFilter(e.target.value); setPagination((p) => ({ ...p, page: 1 })) }}
+                    style={{ padding: '0.4rem' }}
+                  >
+                    <option value="">Todas as fontes</option>
+                    <option value="express">API (Express)</option>
+                    <option value="nginx">Servidor (Nginx)</option>
+                  </select>
                   <input
                     value={ipFilter}
                     onChange={(e) => { setIpFilter(e.target.value); setPagination((p) => ({ ...p, page: 1 })) }}
                     placeholder="Filtrar por IP"
                     style={{ padding: '0.4rem', width: '140px' }}
                   />
-                  {(typeFilter || ipFilter) && (
-                    <button className="ghost-btn" onClick={() => { setTypeFilter(''); setIpFilter('') }}>Limpar</button>
+                  {(typeFilter || ipFilter || sourceFilter) && (
+                    <button className="ghost-btn" onClick={() => { setTypeFilter(''); setIpFilter(''); setSourceFilter('') }}>Limpar</button>
                   )}
                   <button className="ghost-btn" onClick={exportCsv} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                     <Download size={14} /> CSV
@@ -331,11 +391,12 @@ export default function AdminSecurity() {
                       <th style={{ padding: '0.5rem', textAlign: 'left' }}>Caminho</th>
                       <th style={{ padding: '0.5rem', textAlign: 'left' }}>Status</th>
                       <th style={{ padding: '0.5rem', textAlign: 'left' }}>Tipo</th>
+                      <th style={{ padding: '0.5rem', textAlign: 'left' }}>Fonte</th>
                     </tr>
                   </thead>
                   <tbody>
                     {events.length === 0 ? (
-                      <tr><td colSpan={7} style={{ padding: '1rem', color: 'var(--text-muted)' }}>Nenhuma requisição suspeita no período.</td></tr>
+                      <tr><td colSpan={8} style={{ padding: '1rem', color: 'var(--text-muted)' }}>Nenhuma requisição suspeita no período.</td></tr>
                     ) : (
                       events.map((ev) => (
                         <tr key={ev.id} style={{ borderBottom: '1px solid var(--border)' }}>
@@ -346,6 +407,7 @@ export default function AdminSecurity() {
                           <td style={{ padding: '0.5rem', maxWidth: '260px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={`${ev.path}\n${ev.user_agent || ''}`}>{ev.path}</td>
                           <td style={{ padding: '0.5rem', color: ev.status_code >= 400 ? '#fca5a5' : 'inherit' }}>{ev.status_code}</td>
                           <td style={{ padding: '0.5rem' }}>{threatBadge(ev.threat_type)}</td>
+                          <td style={{ padding: '0.5rem' }}>{sourceBadge(ev.source)}</td>
                         </tr>
                       ))
                     )}

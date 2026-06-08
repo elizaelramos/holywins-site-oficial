@@ -10,6 +10,8 @@ module.exports = {
         PORT: 4001,
         NODE_ENV: 'production',
         SESSION_SAMESITE: 'none',
+        INGEST_NGINX: 'true',
+        NGINX_ACCESS_LOG: '/var/log/nginx/holywinscorumba_access.log',
       },
       output: '/var/www/holywins/logs/holywins-out.log',
       error: '/var/www/holywins/logs/holywins-err.log',

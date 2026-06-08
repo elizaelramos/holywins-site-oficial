@@ -13,6 +13,7 @@ import videosRoutes from './routes/videos.js'
 import analyticsRoutes from './routes/analytics.js'
 import requestLogger from './middleware/requestLogger.js'
 import { rollupAndPurge } from './analyticsService.js'
+import { startNginxIngestor } from './nginxLogIngestor.js'
 import { startTelegramBot } from './telegramBot.js'
 
 const app = express()
@@ -113,4 +114,9 @@ app.listen(port, () => {
   // Daily rollup of analytics aggregates + purge of raw data older than 90 days
   rollupAndPurge()
   setInterval(rollupAndPurge, 24 * 60 * 60 * 1000)
+
+  // Ingest nginx access log for full server-level security coverage
+  if (process.env.INGEST_NGINX === 'true') {
+    startNginxIngestor()
+  }
 })

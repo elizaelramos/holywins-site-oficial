@@ -138,8 +138,8 @@ export async function recordRequest(data) {
   try {
     await pool.execute(
       `INSERT INTO request_logs
-        (ip, method, path, status_code, response_time_ms, user_agent, referer, is_bot, threat_type, country)
-       VALUES (?,?,?,?,?,?,?,?,?,?)`,
+        (ip, method, path, status_code, response_time_ms, user_agent, referer, is_bot, threat_type, country, source, created_at)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?,COALESCE(?, CURRENT_TIMESTAMP))`,
       [
         data.ip ?? null,
         (data.method ?? '').slice(0, 10),
@@ -151,10 +151,45 @@ export async function recordRequest(data) {
         data.is_bot ? 1 : 0,
         data.threat_type ?? null,
         data.country ?? null,
+        data.source ?? 'express',
+        data.created_at ?? null,
       ],
     )
   } catch (error) {
     console.error('recordRequest error:', error.message)
+  }
+}
+
+// Bulk insert of request logs (used by the nginx log ingestor). Fire-and-forget.
+export async function recordRequestsBatch(rows) {
+  if (!rows || rows.length === 0) return
+  try {
+    const placeholders = rows.map(() => '(?,?,?,?,?,?,?,?,?,?,?,COALESCE(?, CURRENT_TIMESTAMP))').join(',')
+    const params = []
+    for (const data of rows) {
+      params.push(
+        data.ip ?? null,
+        (data.method ?? '').slice(0, 10),
+        (data.path ?? '/').slice(0, 255),
+        data.status_code ?? null,
+        data.response_time_ms ?? null,
+        (data.user_agent ?? null) && String(data.user_agent).slice(0, 500),
+        (data.referer ?? null) && String(data.referer).slice(0, 500),
+        data.is_bot ? 1 : 0,
+        data.threat_type ?? null,
+        data.country ?? null,
+        data.source ?? 'nginx',
+        data.created_at ?? null,
+      )
+    }
+    await pool.query(
+      `INSERT INTO request_logs
+        (ip, method, path, status_code, response_time_ms, user_agent, referer, is_bot, threat_type, country, source, created_at)
+       VALUES ${placeholders}`,
+      params,
+    )
+  } catch (error) {
+    console.error('recordRequestsBatch error:', error.message)
   }
 }
 
@@ -295,8 +330,11 @@ export async function getPeakHours(fromStr, toStr) {
 // Security aggregations
 // ----------------------------------------------------------------------------
 
-export async function getSecurityOverview(fromStr, toStr) {
+export async function getSecurityOverview(fromStr, toStr, source) {
   const { from, to } = resolveRange(fromStr, toStr)
+  // Optional source filter applied to totals/byType/topIps/timeline (not to bySource)
+  const srcClause = source ? ' AND source = ?' : ''
+  const p = (extra = []) => (source ? [from, to, source, ...extra] : [from, to, ...extra])
 
   const [[totals]] = await pool.execute(
     `SELECT
@@ -307,28 +345,28 @@ export async function getSecurityOverview(fromStr, toStr) {
        SUM(status_code >= 500) AS errors_5xx,
        COUNT(DISTINCT ip) AS unique_ips
      FROM request_logs
-     WHERE created_at BETWEEN ? AND ?`,
-    [from, to],
+     WHERE created_at BETWEEN ? AND ?${srcClause}`,
+    p(),
   )
 
   const [byType] = await pool.execute(
     `SELECT threat_type AS label, COUNT(*) AS total
      FROM request_logs
-     WHERE created_at BETWEEN ? AND ? AND threat_type IS NOT NULL
+     WHERE created_at BETWEEN ? AND ?${srcClause} AND threat_type IS NOT NULL
      GROUP BY threat_type
      ORDER BY total DESC`,
-    [from, to],
+    p(),
   )
 
   const [topIps] = await pool.execute(
     `SELECT ip AS label, country, COUNT(*) AS total,
             SUM(threat_type IS NOT NULL) AS threats
      FROM request_logs
-     WHERE created_at BETWEEN ? AND ?
+     WHERE created_at BETWEEN ? AND ?${srcClause}
      GROUP BY ip, country
      ORDER BY threats DESC, total DESC
      LIMIT 15`,
-    [from, to],
+    p(),
   )
 
   const [timeline] = await pool.execute(
@@ -336,9 +374,19 @@ export async function getSecurityOverview(fromStr, toStr) {
             COUNT(*) AS requests,
             SUM(threat_type IS NOT NULL) AS threats
      FROM request_logs
-     WHERE created_at BETWEEN ? AND ?
+     WHERE created_at BETWEEN ? AND ?${srcClause}
      GROUP BY DATE(created_at)
      ORDER BY day ASC`,
+    p(),
+  )
+
+  const [bySource] = await pool.execute(
+    `SELECT source AS label, COUNT(*) AS total,
+            SUM(threat_type IS NOT NULL) AS threats
+     FROM request_logs
+     WHERE created_at BETWEEN ? AND ?
+     GROUP BY source
+     ORDER BY total DESC`,
     [from, to],
   )
 
@@ -351,6 +399,7 @@ export async function getSecurityOverview(fromStr, toStr) {
     errors5xx: Number(totals.errors_5xx) || 0,
     uniqueIps: Number(totals.unique_ips) || 0,
     byType: byType.map((r) => ({ label: r.label, total: Number(r.total) })),
+    bySource: bySource.map((r) => ({ label: r.label, total: Number(r.total), threats: Number(r.threats) })),
     topIps: topIps.map((r) => ({
       ip: r.label,
       country: r.country,
@@ -365,7 +414,7 @@ export async function getSecurityOverview(fromStr, toStr) {
   }
 }
 
-export async function getSecurityEvents({ page = 1, limit = 50, type, ip, from, to } = {}) {
+export async function getSecurityEvents({ page = 1, limit = 50, type, ip, source, from, to } = {}) {
   const range = resolveRange(from, to)
   const where = ['created_at BETWEEN ? AND ?']
   const params = [range.from, range.to]
@@ -380,12 +429,16 @@ export async function getSecurityEvents({ page = 1, limit = 50, type, ip, from, 
     where.push('ip = ?')
     params.push(ip)
   }
+  if (source) {
+    where.push('source = ?')
+    params.push(source)
+  }
 
   const whereSql = where.join(' AND ')
   const offset = (Math.max(1, Number(page)) - 1) * Number(limit)
 
   const [rows] = await pool.execute(
-    `SELECT id, ip, method, path, status_code, user_agent, threat_type, country, created_at
+    `SELECT id, ip, method, path, status_code, user_agent, threat_type, country, source, created_at
      FROM request_logs
      WHERE ${whereSql}
      ORDER BY created_at DESC

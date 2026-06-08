@@ -105,7 +105,7 @@ router.get('/breakdowns', async (req, res) => {
 
 router.get('/security/overview', async (req, res) => {
   try {
-    res.json(await getSecurityOverview(req.query.from, req.query.to))
+    res.json(await getSecurityOverview(req.query.from, req.query.to, req.query.source))
   } catch (e) {
     console.error('security overview error:', e)
     res.status(500).json({ error: 'Erro ao carregar segurança' })
@@ -114,8 +114,8 @@ router.get('/security/overview', async (req, res) => {
 
 router.get('/security/events', async (req, res) => {
   try {
-    const { page = 1, limit = 50, type, ip, from, to } = req.query
-    res.json(await getSecurityEvents({ page, limit, type, ip, from, to }))
+    const { page = 1, limit = 50, type, ip, source, from, to } = req.query
+    res.json(await getSecurityEvents({ page, limit, type, ip, source, from, to }))
   } catch (e) {
     console.error('security events error:', e)
     res.status(500).json({ error: 'Erro ao carregar eventos' })
@@ -153,9 +153,9 @@ router.get('/export', async (req, res) => {
       rows = await getDevices(from, to)
       headers = ['label', 'total']
     } else if (type === 'security-events') {
-      const data = await getSecurityEvents({ page: 1, limit: 5000, from, to })
+      const data = await getSecurityEvents({ page: 1, limit: 5000, from, to, type: req.query.type, ip: req.query.ip, source: req.query.source })
       rows = data.events
-      headers = ['created_at', 'ip', 'country', 'method', 'path', 'status_code', 'threat_type', 'user_agent']
+      headers = ['created_at', 'ip', 'country', 'method', 'path', 'status_code', 'threat_type', 'source', 'user_agent']
     } else {
       return res.status(400).json({ error: 'Tipo de exportação inválido' })
     }
