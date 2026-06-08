@@ -81,18 +81,50 @@ export async function registerUnlock(id) {
 
 const APPLAY_URL_RE = /^https?:\/\/(?:www\.)?applay360\.com\//i
 const APPLAY_APP_URL_RE = /^https?:\/\/(?:[a-z0-9-]+\.)*applay360\.com\//i
-const MP4_RE = /https?:\/\/[^"'\s<>]+\.mp4[^"'\s<>]*/gi
+// applay360 serve arquivos .mov, .mp4 ou .m3u8 dependendo do upload.
+const VIDEO_FILE_PATTERN = 'https?:\\/\\/[^"\'\\s<>]+\\.(?:mp4|mov|m3u8|webm)[^"\'\\s<>]*'
+const VIDEO_FILE_TEST_RE = new RegExp(VIDEO_FILE_PATTERN, 'i')
+const VIDEO_FILE_GLOBAL_RE = new RegExp(VIDEO_FILE_PATTERN, 'gi')
+const NEXT_DATA_RE = /<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/i
 
 export function isApplayUrl(url) {
   if (!url) return false
   return APPLAY_URL_RE.test(url) || APPLAY_APP_URL_RE.test(url)
 }
 
+// Procura recursivamente por uma URL de vídeo dentro do JSON da página.
+function findVideoUrlInData(node) {
+  if (!node) return null
+  if (typeof node === 'string') {
+    return VIDEO_FILE_TEST_RE.test(node) ? node : null
+  }
+  if (Array.isArray(node)) {
+    for (const item of node) {
+      const found = findVideoUrlInData(item)
+      if (found) return found
+    }
+    return null
+  }
+  if (typeof node === 'object') {
+    // Prioriza campos típicos de arquivo de vídeo.
+    for (const key of ['url', 'file', 'src', 'video_url']) {
+      const val = node[key]
+      if (typeof val === 'string' && VIDEO_FILE_TEST_RE.test(val)) return val
+    }
+    for (const val of Object.values(node)) {
+      const found = findVideoUrlInData(val)
+      if (found) return found
+    }
+  }
+  return null
+}
+
 export async function extractMp4FromApplay(url) {
   const resp = await fetch(url, {
     redirect: 'follow',
     headers: {
-      'User-Agent': 'Mozilla/5.0 (compatible; HolywinsBot/1.0)',
+      'User-Agent':
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36',
       Accept: 'text/html,application/xhtml+xml',
     },
   })
@@ -100,14 +132,44 @@ export async function extractMp4FromApplay(url) {
     throw new Error(`Falha ao acessar o link do vídeo (HTTP ${resp.status})`)
   }
   const html = await resp.text()
-  const matches = html.match(MP4_RE)
-  if (!matches || matches.length === 0) {
-    throw new Error('Não foi possível localizar a URL do vídeo na página do applay360.')
+
+  // 1) Tenta extrair via __NEXT_DATA__ (app Next.js do applay360),
+  //    selecionando o vídeo pelo parâmetro ?v= quando presente.
+  const nextMatch = html.match(NEXT_DATA_RE)
+  if (nextMatch) {
+    try {
+      const data = JSON.parse(nextMatch[1])
+      const videos = data?.props?.pageProps?.data?.videos
+      if (Array.isArray(videos) && videos.length) {
+        let wanted = videos
+        try {
+          const vParam = new URL(url).searchParams.get('v')
+          if (vParam) {
+            const picked = videos.find((v) => String(v?.id) === vParam)
+            if (picked) wanted = [picked]
+          }
+        } catch {
+          // URL sem query param utilizável; usa todos os vídeos.
+        }
+        const fromVideos = findVideoUrlInData(wanted)
+        if (fromVideos) return fromVideos
+      }
+      const fromProps = findVideoUrlInData(data?.props)
+      if (fromProps) return fromProps
+    } catch {
+      // JSON inesperado; cai no fallback por regex abaixo.
+    }
   }
-  // Prefer the longest match (usually the most specific signed URL); dedupe first.
-  const unique = [...new Set(matches)]
-  unique.sort((a, b) => b.length - a.length)
-  return unique[0]
+
+  // 2) Fallback: procura qualquer URL de vídeo no HTML bruto.
+  const matches = html.match(VIDEO_FILE_GLOBAL_RE)
+  if (matches && matches.length) {
+    const unique = [...new Set(matches)]
+    unique.sort((a, b) => b.length - a.length)
+    return unique[0]
+  }
+
+  throw new Error('Não foi possível localizar a URL do vídeo na página do applay360.')
 }
 
 export const VideoStatus = { PENDENTE: STATUS_PENDENTE, PRONTO: STATUS_PRONTO }

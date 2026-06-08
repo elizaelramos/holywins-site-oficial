@@ -7,6 +7,32 @@ type UnlockResult =
   | { status: 'pronto'; codigo: string; videoUrl: string }
   | { status: 'pendente'; codigo: string; message: string }
 
+// Extrai a extensão (sem query string) da URL do vídeo.
+function videoExtension(url: string): string {
+  const clean = url.split(/[?#]/)[0]
+  const match = clean.match(/\.([a-z0-9]+)$/i)
+  return match ? match[1].toLowerCase() : 'mp4'
+}
+
+// MIME do container para o <source>. .mov e .mp4 compartilham o container
+// ISO-BMFF, então declaramos "video/mp4" para .mov também: isso faz o
+// navegador usar o pipeline de MP4 (H.264/AAC), que toca em Chrome, Safari,
+// Edge e Firefox mesmo quando a CDN entrega content-type genérico.
+function videoMimeType(ext: string): string {
+  switch (ext) {
+    case 'webm':
+      return 'video/webm'
+    case 'm3u8':
+      return 'application/vnd.apple.mpegurl'
+    case 'ogg':
+    case 'ogv':
+      return 'video/ogg'
+    default:
+      // mp4, mov, m4v e desconhecidos -> pipeline MP4
+      return 'video/mp4'
+  }
+}
+
 export default function Videos() {
   const [searchParams] = useSearchParams()
   const initialCodigo = (searchParams.get('c') || '').toUpperCase()
@@ -16,6 +42,7 @@ export default function Videos() {
   const [error, setError] = useState('')
   const [result, setResult] = useState<UnlockResult | null>(null)
   const [copied, setCopied] = useState(false)
+  const [playbackFailed, setPlaybackFailed] = useState(false)
   const senhaRef = useRef<HTMLInputElement | null>(null)
   const pollTimer = useRef<number | null>(null)
 
@@ -45,6 +72,7 @@ export default function Videos() {
         if (!silent) setError(data?.message || 'Não foi possível liberar o vídeo.')
         return
       }
+      setPlaybackFailed(false)
       setResult(data as UnlockResult)
       if (data.status === 'pendente') {
         pollTimer.current = window.setTimeout(() => submitUnlock(true), 15000)
@@ -66,6 +94,7 @@ export default function Videos() {
     setResult(null)
     setSenha('')
     setError('')
+    setPlaybackFailed(false)
   }
 
   async function copyShareLink() {
@@ -100,6 +129,7 @@ export default function Videos() {
   }
 
   if (result?.status === 'pronto') {
+    const ext = videoExtension(result.videoUrl)
     return (
       <section className="page-card" style={{ maxWidth: 880, margin: '2rem auto' }}>
         <p className="eyebrow">Seu vídeo 360 · {result.codigo}</p>
@@ -115,20 +145,52 @@ export default function Videos() {
           aspectRatio: '16/9',
           marginBottom: '1rem',
         }}>
-          <video
-            src={result.videoUrl}
-            controls
-            playsInline
-            preload="metadata"
-            controlsList="nodownload"
-            style={{ width: '100%', height: '100%', display: 'block' }}
-          />
+          {playbackFailed ? (
+            <div style={{
+              width: '100%',
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.75rem',
+              padding: '1.5rem',
+              textAlign: 'center',
+              color: '#fff',
+            }}>
+              <p style={{ margin: 0 }}>
+                Seu navegador não conseguiu reproduzir este vídeo aqui.
+              </p>
+              <a
+                href={result.videoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="primary-btn"
+              >
+                Abrir vídeo em nova aba
+              </a>
+            </div>
+          ) : (
+            <video
+              key={result.videoUrl}
+              controls
+              playsInline
+              preload="metadata"
+              controlsList="nodownload"
+              onError={() => setPlaybackFailed(true)}
+              style={{ width: '100%', height: '100%', display: 'block' }}
+            >
+              <source src={result.videoUrl} type={videoMimeType(ext)} />
+              {/* Segunda dica de tipo para containers MOV em navegadores exigentes */}
+              {ext === 'mov' && <source src={result.videoUrl} type="video/quicktime" />}
+            </video>
+          )}
         </div>
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
           <a
             href={result.videoUrl}
-            download={`holywins-${result.codigo}.mp4`}
+            download={`holywins-${result.codigo}.${ext}`}
             target="_blank"
             rel="noopener noreferrer"
             className="primary-btn"
