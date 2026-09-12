@@ -43,6 +43,7 @@ export default function Videos() {
   const [result, setResult] = useState<UnlockResult | null>(null)
   const [copied, setCopied] = useState(false)
   const [playbackFailed, setPlaybackFailed] = useState(false)
+  const [downloading, setDownloading] = useState(false)
   const senhaRef = useRef<HTMLInputElement | null>(null)
   const pollTimer = useRef<number | null>(null)
 
@@ -106,6 +107,60 @@ export default function Videos() {
       window.setTimeout(() => setCopied(false), 2200)
     } catch {
       window.prompt('Copie o link abaixo:', url)
+    }
+  }
+
+  // Baixa o vídeo pela nossa origem (proxy) para funcionar no iPhone.
+  //
+  // O Safari do iOS ignora o atributo `download` de <a> e apenas abre o vídeo no
+  // player. A forma nativa de salvar no iPhone é o Web Share com arquivo, que
+  // oferece "Salvar Vídeo" (Fotos) e "Salvar em Arquivos". Buscamos o arquivo como
+  // blob pela nossa API (same-origin, sem CORS) e:
+  //   - iOS/Android com suporte a compartilhar arquivos -> navigator.share
+  //   - demais navegadores -> download por blob URL + <a download>
+  async function downloadVideo() {
+    if (!result || result.status !== 'pronto') return
+    setError('')
+    setDownloading(true)
+    try {
+      const resp = await fetch(`${API_URL}/videos/download`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ codigo: result.codigo, senha: senha.trim() }),
+      })
+      if (!resp.ok) throw new Error('download')
+
+      const blob = await resp.blob()
+      const ext = videoExtension(result.videoUrl)
+      const filename = `holywins-${result.codigo}.${ext}`
+      const file = new File([blob], filename, { type: blob.type || videoMimeType(ext) })
+
+      if (
+        typeof navigator.canShare === 'function' &&
+        navigator.canShare({ files: [file] })
+      ) {
+        try {
+          await navigator.share({ files: [file], title: filename })
+          return
+        } catch (err) {
+          // Usuário cancelou a folha de compartilhamento: não é erro.
+          if (err instanceof DOMException && err.name === 'AbortError') return
+          // Qualquer outra falha cai para o download por blob abaixo.
+        }
+      }
+
+      const url = URL.createObjectURL(blob)
+      const anchor = document.createElement('a')
+      anchor.href = url
+      anchor.download = filename
+      document.body.appendChild(anchor)
+      anchor.click()
+      anchor.remove()
+      window.setTimeout(() => URL.revokeObjectURL(url), 10000)
+    } catch {
+      setError('Não foi possível baixar o vídeo. Tente novamente.')
+    } finally {
+      setDownloading(false)
     }
   }
 
@@ -188,15 +243,15 @@ export default function Videos() {
         </div>
 
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
-          <a
-            href={result.videoUrl}
-            download={`holywins-${result.codigo}.${ext}`}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            type="button"
             className="primary-btn"
+            onClick={downloadVideo}
+            disabled={downloading}
+            style={downloading ? { opacity: 0.7, cursor: 'progress' } : undefined}
           >
-            Baixar vídeo
-          </a>
+            {downloading ? 'Preparando…' : 'Baixar vídeo'}
+          </button>
           <button type="button" className="ghost-btn" onClick={nativeShare}>
             Compartilhar
           </button>

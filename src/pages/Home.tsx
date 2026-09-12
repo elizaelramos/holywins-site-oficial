@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import ContactForm from '../components/ContactForm.tsx'
 import PlaylistCarousel from '../components/PlaylistCarousel.tsx'
-import PromoSpotlight from '../components/PromoSpotlight.tsx'
+// import PromoSpotlight from '../components/PromoSpotlight.tsx'
 
 const highlights = [
   {
@@ -32,8 +32,6 @@ const schedule = [
   { time: '21h00', title: 'Música', description: 'Show com Coral de Ladário' },
   { time: '22h30', title: 'Premiação e Mais Música', description: 'Grupo da Paróquia e bênção final' },
 ]
-
-const showPromoSpotlight = false
 
 export default function Home() {
   const { hero, banners } = useSiteData()
@@ -74,13 +72,16 @@ export default function Home() {
     <>
       <BannerCarousel banners={banners} />
 
-      {showPromoSpotlight ? (
+      {/* Destaque temporariamente desativado. Reutilizar esta área na abertura das próximas inscrições.
         <PromoSpotlight
-          imageSrc="/images/Arte_Promoção_Carreteiro_2026.jpeg"
-          title="Holywins — A Santidade Vence!"
-          description="O evento que une fé, alegria e comunidade. Venha fazer parte do Holywins!"
+          imageSrc="/images/corrida-dom-bosco-5k.png"
+          title="1ª Corrida de Rua Dom Bosco 5K"
+          description="5 km pelas ruas de Corumbá · 16/08/2026 (domingo), largada 7h. Inscrições de 30/06 a 10/08 · R$60. Os recursos ajudam a realizar a 5ª edição do Holywins!"
+          linkHref="https://corridadombosco5k.holywinscorumba.com/"
+          linkLabel="Saiba mais e inscreva-se"
+          badgeText="🏃 Corrida em destaque"
         />
-      ) : null}
+      */}
 
       <section className="moments-section">
         <h2 className="moments-title">

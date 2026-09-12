@@ -2352,6 +2352,37 @@ select {
   color: var(--text-muted);
 }
 
+.promo-spotlight__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+  padding: 0.7rem 1.4rem;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fff;
+  text-decoration: none;
+  background: linear-gradient(135deg, var(--blue-500), #0a6ed1);
+  box-shadow: 0 8px 24px rgba(10, 110, 209, 0.35);
+  transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
+}
+
+.promo-spotlight__cta:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.08);
+  box-shadow: 0 12px 30px rgba(10, 110, 209, 0.45);
+}
+
+.promo-spotlight__cta svg {
+  transition: transform 0.15s ease;
+}
+
+.promo-spotlight__cta:hover svg {
+  transform: translateX(3px);
+}
+
 .promo-spotlight__actions {
   display: flex;
   flex-wrap: wrap;

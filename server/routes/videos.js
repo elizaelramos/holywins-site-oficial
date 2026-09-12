@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { Readable } from 'node:stream'
 import rateLimit from 'express-rate-limit'
 import { requireAuth } from './auth.js'
 import {
@@ -53,6 +54,54 @@ router.post('/unlock', unlockLimiter, async (req, res, next) => {
       codigo: video.codigo,
       videoUrl: video.videoUrl,
     })
+  } catch (err) {
+    next(err)
+  }
+})
+
+// Proxy de download same-origin.
+//
+// O videoUrl aponta para o CDN do applay360 (cross-origin) e o Safari do iPhone
+// ignora o atributo `download` de <a>, abrindo o vídeo no player em vez de baixar.
+// Este endpoint valida código+senha, busca o vídeo de origem e o retransmite pela
+// nossa origem com `Content-Disposition: attachment`. Isso permite que o front-end
+// leia o arquivo como blob (sem barreira de CORS) e o entregue via Web Share
+// ("Salvar Vídeo"/"Salvar em Arquivos" no iOS) ou download por blob nos demais.
+router.post('/download', unlockLimiter, async (req, res, next) => {
+  try {
+    const codigo = normalizeCodigo(req.body?.codigo)
+    const senha = String(req.body?.senha ?? '').trim()
+    if (!codigo || !senha) {
+      return res.status(400).json({ message: 'Informe o código e a senha.' })
+    }
+    const video = await findByCodigo(codigo)
+    if (!video || video.senha !== senha) {
+      return res.status(401).json({ message: 'Código ou senha inválidos.' })
+    }
+    if (video.status !== VideoStatus.PRONTO || !video.videoUrl) {
+      return res.status(409).json({ message: 'O vídeo ainda está sendo preparado.' })
+    }
+
+    const upstream = await fetch(video.videoUrl)
+    if (!upstream.ok || !upstream.body) {
+      return res.status(502).json({ message: 'Não foi possível obter o vídeo de origem.' })
+    }
+
+    const ext =
+      video.videoUrl.split(/[?#]/)[0].match(/\.([a-z0-9]+)$/i)?.[1]?.toLowerCase() || 'mp4'
+    const contentType = upstream.headers.get('content-type') || 'video/mp4'
+    const contentLength = upstream.headers.get('content-length')
+
+    res.setHeader('Content-Type', contentType)
+    res.setHeader('Content-Disposition', `attachment; filename="holywins-${codigo}.${ext}"`)
+    if (contentLength) res.setHeader('Content-Length', contentLength)
+
+    const nodeStream = Readable.fromWeb(upstream.body)
+    nodeStream.on('error', () => {
+      if (!res.headersSent) res.status(502).end()
+      else res.destroy()
+    })
+    nodeStream.pipe(res)
   } catch (err) {
     next(err)
   }

@@ -4,18 +4,29 @@ interface PromoSpotlightProps {
   imageSrc: string
   title?: string
   description?: string
+  /** Link externo do evento em destaque (usado no botão de ação e no compartilhamento). */
+  linkHref?: string
+  /** Texto do botão de ação principal. */
+  linkLabel?: string
+  /** Texto do selo exibido no topo do card. */
+  badgeText?: string
 }
 
 export default function PromoSpotlight({
   imageSrc,
   title = 'Holywins — A Santidade Vence!',
   description = 'O evento que une fé, alegria e comunidade. Venha fazer parte do Holywins!',
+  linkHref,
+  linkLabel = 'Saiba mais e inscreva-se',
+  badgeText = '🎉 Evento em destaque',
 }: PromoSpotlightProps) {
   const [modalOpen, setModalOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const [canNativeShare, setCanNativeShare] = useState(false)
 
-  const pageUrl = typeof window !== 'undefined' ? window.location.href : ''
+  // Quando há link do evento, o compartilhamento aponta para ele; senão, para a página atual.
+  const currentUrl = typeof window !== 'undefined' ? window.location.href : ''
+  const pageUrl = linkHref || currentUrl
   const imageAbsoluteUrl =
     typeof window !== 'undefined'
       ? `${window.location.origin}${imageSrc}`
@@ -109,7 +120,7 @@ export default function PromoSpotlight({
     <>
       {/* Card de destaque */}
       <section className="promo-spotlight reveal-on-scroll" aria-label={title}>
-        <div className="promo-spotlight__badge">🎉 Evento em destaque</div>
+        <div className="promo-spotlight__badge">{badgeText}</div>
         <div
           className="promo-spotlight__image-wrapper"
           role="button"
@@ -133,6 +144,18 @@ export default function PromoSpotlight({
         <div className="promo-spotlight__info">
           <h3 className="promo-spotlight__title">{title}</h3>
           <p className="promo-spotlight__desc">{description}</p>
+
+          {linkHref ? (
+            <a
+              className="promo-spotlight__cta"
+              href={linkHref}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {linkLabel}
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18" aria-hidden><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </a>
+          ) : null}
 
           <div className="promo-spotlight__actions">
             {canNativeShare ? (
