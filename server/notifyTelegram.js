@@ -82,7 +82,7 @@ export async function notifyNewInscricao(inscricao) {
     '*Nova inscrição Holywins*',
     `*Código:* ${escapeMarkdownV2(inscricao.codigo)}`,
     `*Responsável:* ${escapeMarkdownV2(inscricao.nome)}`,
-    `*E\\-mail:* ${escapeMarkdownV2(inscricao.email)}`,
+    `*E\\-mail:* ${escapeMarkdownV2(inscricao.email || 'Não informado')}`,
     `*Telefone:* ${escapeMarkdownV2(inscricao.telefone)}`,
     inscricao.paroquia ? `*Paróquia:* ${escapeMarkdownV2(inscricao.paroquia)}` : null,
     '',
@@ -91,6 +91,7 @@ export async function notifyNewInscricao(inscricao) {
       const parts = [`${i + 1}\\. ${escapeMarkdownV2(p.nome)}`]
       if (p.idade != null) parts.push(`${escapeMarkdownV2(p.idade)} anos`)
       if (p.participaDesfile) parts.push('desfile: sim')
+      if (p.restricaoAlimentar) parts.push('restrição: ' + escapeMarkdownV2(p.restricaoAlimentar))
       return parts.join(' \\- ')
     }),
   ].filter(Boolean)

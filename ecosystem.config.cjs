@@ -9,6 +9,7 @@ module.exports = {
       env: {
         PORT: 4001,
         NODE_ENV: 'production',
+        INSCRICOES_ABERTAS: 'true',
         SESSION_SAMESITE: 'none',
         INGEST_NGINX: 'true',
         NGINX_ACCESS_LOG: '/var/log/nginx/holywinscorumba_access.log',

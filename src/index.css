@@ -2293,7 +2293,7 @@ select {
   cursor: pointer;
   overflow: hidden;
   aspect-ratio: 16 / 9;
-  background: #010a1a;
+  background: #fff;
 }
 
 .promo-spotlight__image {
@@ -2517,6 +2517,7 @@ select {
   object-fit: contain;
   display: block;
   flex: 1;
+  background: #fff;
 }
 
 .promo-modal__footer {

@@ -4,7 +4,7 @@ interface PromoSpotlightProps {
   imageSrc: string
   title?: string
   description?: string
-  /** Link externo do evento em destaque (usado no botão de ação e no compartilhamento). */
+  /** Link do evento em destaque (usado no botão de ação e no compartilhamento). */
   linkHref?: string
   /** Texto do botão de ação principal. */
   linkLabel?: string
@@ -26,7 +26,8 @@ export default function PromoSpotlight({
 
   // Quando há link do evento, o compartilhamento aponta para ele; senão, para a página atual.
   const currentUrl = typeof window !== 'undefined' ? window.location.href : ''
-  const pageUrl = linkHref || currentUrl
+  const pageUrl = typeof window !== 'undefined' ? new URL(linkHref || currentUrl, window.location.origin).href : linkHref || currentUrl
+  const internalLink = linkHref?.startsWith('/') || linkHref?.startsWith('#')
   const imageAbsoluteUrl =
     typeof window !== 'undefined'
       ? `${window.location.origin}${imageSrc}`
@@ -55,7 +56,7 @@ export default function PromoSpotlight({
       const resp = await fetch(imageSrc)
       const blob = await resp.blob()
       const ext = blob.type.includes('png') ? 'png' : 'jpeg'
-      return new File([blob], `promo-carreteiro-2026.${ext}`, { type: blob.type })
+      return new File([blob], `holywins.${ext}`, { type: blob.type })
     } catch {
       return null
     }
@@ -67,7 +68,7 @@ export default function PromoSpotlight({
       if (file && navigator.canShare?.({ files: [file] })) {
         await navigator.share({
           title: `😇 ${title}`,
-          text: description,
+          text: `${description}\n${pageUrl}`,
           files: [file],
         })
       } else {
@@ -149,8 +150,8 @@ export default function PromoSpotlight({
             <a
               className="promo-spotlight__cta"
               href={linkHref}
-              target="_blank"
-              rel="noopener noreferrer"
+              target={internalLink ? undefined : '_blank'}
+              rel={internalLink ? undefined : 'noopener noreferrer'}
             >
               {linkLabel}
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="18" height="18" aria-hidden><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>

@@ -5,7 +5,8 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import ContactForm from '../components/ContactForm.tsx'
 import PlaylistCarousel from '../components/PlaylistCarousel.tsx'
-// import PromoSpotlight from '../components/PromoSpotlight.tsx'
+import PromoSpotlight from '../components/PromoSpotlight.tsx'
+import Inscricoes from './Inscricoes.tsx'
 
 const highlights = [
   {
@@ -72,16 +73,17 @@ export default function Home() {
     <>
       <BannerCarousel banners={banners} />
 
-      {/* Destaque temporariamente desativado. Reutilizar esta área na abertura das próximas inscrições.
-        <PromoSpotlight
-          imageSrc="/images/corrida-dom-bosco-5k.png"
-          title="1ª Corrida de Rua Dom Bosco 5K"
-          description="5 km pelas ruas de Corumbá · 16/08/2026 (domingo), largada 7h. Inscrições de 30/06 a 10/08 · R$60. Os recursos ajudam a realizar a 5ª edição do Holywins!"
-          linkHref="https://corridadombosco5k.holywinscorumba.com/"
-          linkLabel="Saiba mais e inscreva-se"
-          badgeText="🏃 Corrida em destaque"
-        />
-      */}
+      <PromoSpotlight
+        imageSrc="/images/logo.png"
+        title="Inscrições abertas para o Holywins!"
+        description="Confirme sua presença e inscreva todas as pessoas que vão com você, incluindo os acompanhantes das crianças. Assim, podemos preparar a alimentação e acolher todos com carinho."
+        linkHref="/#inscricoes"
+        linkLabel="Preencher minha inscrição"
+        badgeText="😇 Inscrições abertas"
+      />
+      <div id="inscricoes" style={{ scrollMarginTop: '6rem' }}>
+        <Inscricoes embedded />
+      </div>
 
       <section className="moments-section">
         <h2 className="moments-title">
