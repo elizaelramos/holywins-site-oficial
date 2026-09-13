@@ -55,8 +55,8 @@ export default function Inscricoes({ embedded = false }: { embedded?: boolean })
           <input type="number" min="0" max="120" step="1" value={pessoa.idade} onChange={(e) => atualizar({ idade: e.target.value })} required />
           <small>Para menores de 1 ano, informe 0.</small>
         </label>
-        <details className="inscricao-detalhes">
-          <summary>Alimentação e desfile (opcional)</summary>
+        <div className="inscricao-detalhes">
+          <p className="inscricao-detalhes-titulo">Alimentação e desfile (opcional)</p>
           <div className="inscricao-campos">
             <label>Restrição alimentar
               <input maxLength={255} value={pessoa.restricaoAlimentar} onChange={(e) => atualizar({ restricaoAlimentar: e.target.value })} />
@@ -66,7 +66,7 @@ export default function Inscricoes({ embedded = false }: { embedded?: boolean })
               Vai participar do desfile de santos
             </label>
           </div>
-        </details>
+        </div>
       </>
     )
   }
@@ -146,10 +146,7 @@ export default function Inscricoes({ embedded = false }: { embedded?: boolean })
       {embedded ? <h2>Inscreva-se no Holywins Corumbá</h2> : <h1>Holywins Corumbá</h1>}
       <p>Sua presença nos ajuda a preparar tudo com carinho. Todos são bem-vindos!</p>
       {!carregando && !inscricoesAbertas && <p className="inscricao-aviso" role="status">As inscrições abrem em breve.</p>}
-      <form onSubmit={handleSubmit} onInvalidCapture={(event) => {
-        const details = (event.target as HTMLElement).closest('details')
-        if (details) details.open = true
-      }}>
+      <form onSubmit={handleSubmit}>
         <fieldset disabled={submitting} className="inscricao-campos">
           <legend>Inscrição</legend>
           <label>Seu nome *

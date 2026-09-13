@@ -13,12 +13,12 @@
   width: 100%; min-width: 0; min-height: 48px; padding: 0.75rem;
   border: 1px solid #c5cbd1; border-radius: 6px; background: #fff; color: #20252b; font: inherit;
 }
-.inscricao-pagina input:focus-visible, .inscricao-pagina button:focus-visible, .inscricao-pagina summary:focus-visible {
+.inscricao-pagina input:focus-visible, .inscricao-pagina button:focus-visible {
   outline: 3px solid #f6cb60; outline-offset: 3px;
 }
 .inscricao-pagina .inscricao-checkbox { display: flex; flex-direction: row; align-items: flex-start; gap: 0.75rem; }
 .inscricao-checkbox input { width: 22px; height: 22px; flex: 0 0 22px; margin: 1px 0 0; accent-color: #268662; }
-.inscricao-detalhes summary { cursor: pointer; padding: 0.5rem 0; }
+.inscricao-pagina .inscricao-detalhes-titulo { margin: 0; padding: 0.5rem 0; }
 .inscricao-pessoa { position: relative; min-width: 0; margin: 0; padding: 1.25rem 0; border: 0; border-top: 1px solid #64717b; }
 .inscricao-pessoa legend { padding: 0 0.5rem 0 0; font-weight: 600; }
 .inscricao-pessoa > label { margin-top: 1.25rem; }
