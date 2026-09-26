@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import ContactForm from '../components/ContactForm.tsx'
 import { useSiteData } from '../context/SiteDataContext.tsx'
 
@@ -33,15 +34,18 @@ export default function Contact() {
             </li>
           </ul>
         </div>
-        <div className="map-placeholder" aria-hidden>
+        <div className="map-placeholder">
           <div>
             <img
               src="/images/emoji_santidade_Holywins.png"
-              alt="emoji santidade"
+              alt=""
               className="emoji-icon"
             />
-            <p className="map-title">Formulário de inscrições fechado no momento</p>
-            <small className="map-sub">Fique tranquilo — quando abrirmos as inscrições, o formulário aparecerá neste local para você se cadastrar.</small>
+            <p className="map-title">Estamos com inscrições abertas!</p>
+            <small className="map-sub">Garanta já a sua participação no Holywins.</small>
+            <Link to="/inscricoes" className="primary-btn">
+              Fazer inscrição
+            </Link>
           </div>
         </div>
       </section>

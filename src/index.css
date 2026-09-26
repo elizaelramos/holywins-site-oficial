@@ -986,8 +986,14 @@ nav,
 }
 
 .map-placeholder .map-sub {
+  display: block;
   color: rgba(255, 255, 255, 0.9);
   font-size: 1rem;
+}
+
+.map-placeholder .primary-btn {
+  display: inline-flex;
+  margin-top: 1rem;
 }
 
 .contact-form {
