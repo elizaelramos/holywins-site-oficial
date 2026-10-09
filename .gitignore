@@ -40,3 +40,6 @@ backups/
 
 # Claude Code local settings
 .claude/settings.local.json
+
+# Cartas enviadas no concurso Carta Premiada (dados pessoais)
+server/uploads/

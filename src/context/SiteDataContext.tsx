@@ -208,7 +208,7 @@ const initialData: SiteDataState = {
       description: 'Traga sua vela e participe de um ato público de fé pelas ruas do bairro.',
       image: '/images/slide-1.svg',
       accent: '#6ac8ff',
-      link: '#inscricoes',
+      link: '/inscricoes',
     },
     {
       id: 'slide-2',

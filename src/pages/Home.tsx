@@ -6,7 +6,6 @@ import { Link } from 'react-router-dom'
 import ContactForm from '../components/ContactForm.tsx'
 import PlaylistCarousel from '../components/PlaylistCarousel.tsx'
 import PromoSpotlight from '../components/PromoSpotlight.tsx'
-import Inscricoes from './Inscricoes.tsx'
 
 const highlights = [
   {
@@ -77,13 +76,20 @@ export default function Home() {
         imageSrc="/images/logo.png"
         title="Inscrições abertas para o Holywins!"
         description="Confirme sua presença e inscreva todas as pessoas que vão com você, incluindo os acompanhantes das crianças. Assim, podemos preparar a alimentação e acolher todos com carinho."
-        linkHref="/#inscricoes"
+        linkHref="/inscricoes"
         linkLabel="Preencher minha inscrição"
         badgeText="😇 Inscrições abertas"
       />
-      <div id="inscricoes" style={{ scrollMarginTop: '6rem' }}>
-        <Inscricoes embedded />
-      </div>
+
+      <PromoSpotlight
+        imageSrc="/carta-premiada/carta-premiada-holywins-2026.jpg"
+        imageFit="cover"
+        title="Carta Premiada Holywins 2026"
+        description="Escreva uma cartinha sobre um santo e participe do concurso! Envie a sua carta pelo site até 31/10/2026. A melhor carta será revelada no Holywins, dia 1º de novembro."
+        linkHref="/carta-premiada"
+        linkLabel="Enviar minha carta"
+        badgeText="✉️ Concurso Carta Premiada"
+      />
 
       <section className="moments-section">
         <h2 className="moments-title">

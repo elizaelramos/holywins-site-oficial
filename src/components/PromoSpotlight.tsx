@@ -10,6 +10,8 @@ interface PromoSpotlightProps {
   linkLabel?: string
   /** Texto do selo exibido no topo do card. */
   badgeText?: string
+  /** Como a imagem preenche o card: 'contain' mostra a arte inteira; 'cover' preenche o espaço. */
+  imageFit?: 'contain' | 'cover'
 }
 
 export default function PromoSpotlight({
@@ -19,6 +21,7 @@ export default function PromoSpotlight({
   linkHref,
   linkLabel = 'Saiba mais e inscreva-se',
   badgeText = '🎉 Evento em destaque',
+  imageFit = 'contain',
 }: PromoSpotlightProps) {
   const [modalOpen, setModalOpen] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -134,6 +137,7 @@ export default function PromoSpotlight({
             src={imageSrc}
             alt={title}
             className="promo-spotlight__image"
+            style={imageFit === 'cover' ? { objectFit: 'cover' } : undefined}
             loading="lazy"
           />
           <div className="promo-spotlight__overlay">
