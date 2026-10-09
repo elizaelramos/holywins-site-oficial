@@ -4,8 +4,8 @@ import { ArrowLeft, Check, Copy, Download, FileText, Printer, Upload, X } from '
 import './CartaPremiada.css'
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
-const IMAGEM = '/carta-premiada/carta-premiada-holywins-2026.jpg'
-const MODELO_PDF = '/carta-premiada/carta-premiada-holywins-2026-modelo.pdf'
+const IMAGEM = '/images/carta-premiada/carta-premiada-holywins-2026.jpg'
+const MODELO_PDF = '/images/carta-premiada/carta-premiada-holywins-2026-modelo.pdf'
 const WHATSAPP = '(67) 98105-8529'
 const WHATSAPP_LINK = 'https://wa.me/5567981058529'
 const MAX_ARQUIVOS = 4
@@ -17,7 +17,7 @@ const passos = [
   { titulo: 'Conheça', texto: 'a vida dele(a): pesquise a história do(a) seu(sua) novo(a) amigo(a) no céu.' },
   { titulo: 'Escreva', texto: 'a carta contando por que você o(a) escolheu e o que mais chamou a sua atenção. Pode ser em qualquer papel, e pode desenhar!' },
   { titulo: 'Entregue', texto: 'até 31/10/2026 na urna da Paróquia São João Bosco, pelo WhatsApp ou aqui pelo site. Coloque nome, telefone e paróquia.' },
-  { titulo: 'A melhor carta', texto: 'escolhida pela comissão organizadora, será revelada no Holywins, dia 1º de novembro.' },
+  { titulo: 'A melhor carta', texto: 'escolhida pela comissão organizadora, será revelada em uma Missa, com data a ser divulgada.' },
 ]
 
 type Anexo = { id: number; file: File; preview: string | null }
@@ -175,7 +175,7 @@ export default function CartaPremiada() {
             {resultado.santo ? <> · Santo(a): {resultado.santo}</> : null}
           </small>
         </div>
-        <p>A melhor carta será revelada no Holywins, dia <strong>1º de novembro</strong>.</p>
+        <p>A melhor carta será revelada em uma <strong>Missa</strong>, com data a ser divulgada.</p>
         <div className="carta-sucesso__acoes">
           <button type="button" className="ghost-btn" onClick={copiarProtocolo}>
             {copiado ? <Check size={18} aria-hidden="true" /> : <Copy size={18} aria-hidden="true" />}

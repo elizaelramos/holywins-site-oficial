@@ -82,10 +82,10 @@ export default function Home() {
       />
 
       <PromoSpotlight
-        imageSrc="/carta-premiada/carta-premiada-holywins-2026.jpg"
+        imageSrc="/images/carta-premiada/carta-premiada-holywins-2026.jpg"
         imageFit="cover"
         title="Carta Premiada Holywins 2026"
-        description="Escreva uma cartinha sobre um santo e participe do concurso! Envie a sua carta pelo site até 31/10/2026. A melhor carta será revelada no Holywins, dia 1º de novembro."
+        description="Escreva uma cartinha sobre um santo e participe do concurso! Envie a sua carta pelo site até 31/10/2026. A melhor carta será revelada em uma Missa, com data a ser divulgada."
         linkHref="/carta-premiada"
         linkLabel="Enviar minha carta"
         badgeText="✉️ Concurso Carta Premiada"
