@@ -97,3 +97,19 @@ export async function notifyNewInscricao(inscricao) {
   ].filter(Boolean)
   await sendTelegram(lines.join('\n'))
 }
+
+export async function notifyNewCarta(carta) {
+  const arquivos = carta.arquivos ?? []
+  const lines = [
+    '*✉️ Nova Carta Premiada recebida*',
+    `*Protocolo:* ${escapeMarkdownV2(carta.protocolo)}`,
+    `*Nome:* ${escapeMarkdownV2(carta.nome)}${carta.idade != null ? escapeMarkdownV2(` (${carta.idade} anos)`) : ''}`,
+    `*Telefone:* ${escapeMarkdownV2(carta.telefone)}`,
+    `*Paróquia:* ${escapeMarkdownV2(carta.paroquia)}`,
+    carta.santo ? `*Santo\\(a\\):* ${escapeMarkdownV2(carta.santo)}` : null,
+    `*Arquivos:* ${escapeMarkdownV2(arquivos.map((a) => (a.mime === 'application/pdf' ? 'PDF' : 'imagem')).join(', '))}`,
+    '',
+    'Leia e imprima a carta no painel: Admin → Cartas',
+  ].filter((line) => line != null)
+  await sendTelegram(lines.join('\n'))
+}

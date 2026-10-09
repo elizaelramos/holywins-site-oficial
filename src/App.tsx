@@ -6,11 +6,13 @@ import Communities from './pages/Communities.tsx'
 import SantoDoDia from './pages/SantoDoDia.tsx'
 import Contact from './pages/Contact.tsx'
 import Inscricoes from './pages/Inscricoes.tsx'
+import CartaPremiada from './pages/CartaPremiada.tsx'
 import Admin from './pages/Admin.tsx'
 import AdminUsers from './pages/AdminUsers.tsx'
 import AdminLogs from './pages/AdminLogs.tsx'
 import AdminProfile from './pages/AdminProfile.tsx'
 import AdminVideos from './pages/AdminVideos.tsx'
+import AdminCartas from './pages/AdminCartas.tsx'
 import Videos from './pages/Videos.tsx'
 import AdminAnalytics from './pages/AdminAnalytics.tsx'
 import AdminSecurity from './pages/AdminSecurity.tsx'
@@ -96,6 +98,7 @@ function App() {
           <Route path="/santo-do-dia" element={<SantoDoDia />} />
           <Route path="/contato" element={<Contact />} />
           <Route path="/inscricoes" element={<Inscricoes />} />
+          <Route path="/carta-premiada" element={<CartaPremiada />} />
           <Route path="/v" element={<Videos />} />
           <Route path="/login" element={<Login />} />
           <Route
@@ -135,6 +138,14 @@ function App() {
             element={
               <ProtectedRoute>
                 <AdminVideos />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/cartas"
+            element={
+              <ProtectedRoute>
+                <AdminCartas />
               </ProtectedRoute>
             }
           />
