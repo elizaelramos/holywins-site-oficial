@@ -323,7 +323,7 @@ export default function Admin() {
               <button className="ghost-btn" type="button" onClick={async () => {
                 if (!confirm('Remover este Link Rápido?')) return
                 try {
-                  const resp = await fetch(`${import.meta.env.VITE_API_URL ?? '/api'}/moments/${e.id}`, { method: 'DELETE' })
+                  const resp = await fetch(`${import.meta.env.VITE_API_URL ?? '/api'}/moments/${e.id}`, { method: 'DELETE', credentials: 'include' })
                   if (!resp.ok) throw new Error('failed')
                   await load()
                 } catch (err) {
@@ -372,7 +372,7 @@ export default function Admin() {
               <button className="ghost-btn" type="button" onClick={async () => {
                 if (!confirm('Remover esta música da playlist?')) return
                 try {
-                  const resp = await fetch(`${import.meta.env.VITE_API_URL ?? '/api'}/playlist/${e.id}`, { method: 'DELETE' })
+                  const resp = await fetch(`${import.meta.env.VITE_API_URL ?? '/api'}/playlist/${e.id}`, { method: 'DELETE', credentials: 'include' })
                   if (!resp.ok) throw new Error('failed')
                   setPlaylistVersion(v => v + 1)
                 } catch (err) {
@@ -1245,6 +1245,7 @@ export default function Admin() {
                 const resp = await fetch(`${import.meta.env.VITE_API_URL ?? '/api'}/moments`, {
                   method: 'POST',
                   body: formData,
+                  credentials: 'include',
                 })
                 if (!resp.ok) throw new Error(await resp.text())
                 const created = await resp.json()
@@ -1282,7 +1283,7 @@ export default function Admin() {
                 onClick={async () => {
                   if (!confirm('Remover todos os Links Rápidos? Esta ação remove também os arquivos enviados.')) return
                   try {
-                    const resp = await fetch(`${import.meta.env.VITE_API_URL ?? '/api'}/moments`, { method: 'DELETE' })
+                    const resp = await fetch(`${import.meta.env.VITE_API_URL ?? '/api'}/moments`, { method: 'DELETE', credentials: 'include' })
                     if (!resp.ok) throw new Error('failed')
                     setMessage('Todos os Links Rápidos foram removidos.')
                     setMomentsVersion((v) => v + 1)
@@ -1318,7 +1319,7 @@ export default function Admin() {
             setErrorMessage('')
             try {
               const formData = new FormData(e.currentTarget as HTMLFormElement)
-              const resp = await fetch(`${import.meta.env.VITE_API_URL ?? '/api'}/playlist`, { method: 'POST', body: formData })
+              const resp = await fetch(`${import.meta.env.VITE_API_URL ?? '/api'}/playlist`, { method: 'POST', body: formData, credentials: 'include' })
               if (!resp.ok) throw new Error(await resp.text())
               setMessage('Música adicionada à playlist!')
               setPlaylistVersion(v => v + 1)
@@ -1345,7 +1346,7 @@ export default function Admin() {
               <button className="ghost-btn" type="button" onClick={async () => {
                 if (!confirm('Remover todas as músicas da playlist?')) return
                 try {
-                  const resp = await fetch(`${import.meta.env.VITE_API_URL ?? '/api'}/playlist`, { method: 'DELETE' })
+                  const resp = await fetch(`${import.meta.env.VITE_API_URL ?? '/api'}/playlist`, { method: 'DELETE', credentials: 'include' })
                   if (!resp.ok) throw new Error('failed')
                   setMessage('Playlist limpa.')
                   setPlaylistVersion(v => v + 1)

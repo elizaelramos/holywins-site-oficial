@@ -26,6 +26,8 @@ import {
   getCommunityById,
 } from '../siteDataService.js'
 import { notifyNewMessage } from '../notifyTelegram.js'
+import { requireAuth } from './auth.js'
+import { isGibberish, isInvalidPhone } from '../spamFilter.js'
 import fs from 'fs'
 import path from 'path'
 
@@ -199,7 +201,7 @@ router.get('/site-data', async (_req, res, next) => {
   }
 })
 
-router.put('/hero', async (req, res, next) => {
+router.put('/hero', requireAuth, async (req, res, next) => {
   try {
     const { title, subtitle, date, location, callToAction } = req.body
     if (!title || !subtitle || !date || !location || !callToAction) {
@@ -212,7 +214,7 @@ router.put('/hero', async (req, res, next) => {
   }
 })
 
-router.put('/contact', async (req, res, next) => {
+router.put('/contact', requireAuth, async (req, res, next) => {
   try {
     const { phone, email, address, officeHours, whatsapp } = req.body
     if (!phone || !email || !address || !officeHours || !whatsapp) {
@@ -225,7 +227,7 @@ router.put('/contact', async (req, res, next) => {
   }
 })
 
-router.post('/gallery', (req, res, next) => {
+router.post('/gallery', requireAuth, (req, res, next) => {
   galleryUpload.array('images', 300)(req, res, (err) => {
     if (err) {
       console.error('[Gallery Upload Error]', err)
@@ -290,6 +292,8 @@ router.post('/messages', messageLimiter, async (req, res, next) => {
     if (!name || !email || !message) {
       return res.status(400).json({ message: 'Nome, e-mail e mensagem são obrigatórios.' })
     }
+    if (isInvalidPhone(phone)) return res.status(400).json({ message: 'Confira o telefone informado.' })
+    if ([name, message].some(isGibberish)) return res.status(400).json({ message: 'Confira os dados informados.' })
 
     // Optional reCAPTCHA
     if (process.env.RECAPTCHA_SECRET) {
@@ -315,7 +319,7 @@ router.post('/messages', messageLimiter, async (req, res, next) => {
 })
 
 // Admin routes - list/delete
-router.get('/messages', async (_req, res, next) => {
+router.get('/messages', requireAuth, async (_req, res, next) => {
   try {
     const messages = await listMessages()
     res.json(messages)
@@ -324,7 +328,7 @@ router.get('/messages', async (_req, res, next) => {
   }
 })
 
-router.delete('/messages/:id', async (req, res, next) => {
+router.delete('/messages/:id', requireAuth, async (req, res, next) => {
   try {
     await deleteMessage(req.params.id)
     res.status(204).send()
@@ -333,7 +337,7 @@ router.delete('/messages/:id', async (req, res, next) => {
   }
 })
 
-router.delete('/gallery/:id', async (req, res, next) => {
+router.delete('/gallery/:id', requireAuth, async (req, res, next) => {
   try {
     await deleteGalleryItem(req.params.id)
     res.status(204).send()
@@ -342,7 +346,7 @@ router.delete('/gallery/:id', async (req, res, next) => {
   }
 })
 
-router.put('/gallery/:id', async (req, res, next) => {
+router.put('/gallery/:id', requireAuth, async (req, res, next) => {
   try {
     const id = req.params.id
     const { title, description, category, shareLink } = req.body
@@ -359,7 +363,7 @@ router.put('/gallery/:id', async (req, res, next) => {
   }
 })
 
-router.put('/gallery/:id/cover', async (req, res, next) => {
+router.put('/gallery/:id/cover', requireAuth, async (req, res, next) => {
   try {
     const id = req.params.id
     const updated = await updateGalleryCover(id)
@@ -370,7 +374,7 @@ router.put('/gallery/:id/cover', async (req, res, next) => {
   }
 })
 
-router.post('/slides', slideUpload.single('image'), async (req, res, next) => {
+router.post('/slides', requireAuth, slideUpload.single('image'), async (req, res, next) => {
   try {
     const { title, description, accent, link } = req.body
     if (!title || !description || !req.file) {
@@ -390,7 +394,7 @@ router.post('/slides', slideUpload.single('image'), async (req, res, next) => {
   }
 })
 
-router.delete('/slides/:id', async (req, res, next) => {
+router.delete('/slides/:id', requireAuth, async (req, res, next) => {
   try {
     await deleteSlide(req.params.id)
     res.status(204).send()
@@ -399,7 +403,7 @@ router.delete('/slides/:id', async (req, res, next) => {
   }
 })
 
-router.post('/sponsors', upload.single('image'), async (req, res, next) => {
+router.post('/sponsors', requireAuth, upload.single('image'), async (req, res, next) => {
   try {
     const { name } = req.body
     if (!name || !req.file) {
@@ -413,7 +417,7 @@ router.post('/sponsors', upload.single('image'), async (req, res, next) => {
   }
 })
 
-router.delete('/sponsors/:id', async (req, res, next) => {
+router.delete('/sponsors/:id', requireAuth, async (req, res, next) => {
   try {
     await deleteSponsor(req.params.id)
     res.status(204).send()
@@ -432,7 +436,7 @@ router.get('/banners', async (_req, res, next) => {
 })
 
 // Upload individual banner images (background or component images)
-router.post('/banners/upload-image', bannerUpload.single('image'), async (req, res, next) => {
+router.post('/banners/upload-image', requireAuth, bannerUpload.single('image'), async (req, res, next) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: 'Nenhuma imagem foi enviada.' })
@@ -463,7 +467,7 @@ const createBannerHandler = async (req, res, next) => {
   }
 }
 
-router.post('/banners', bannerUpload.single('image'), createBannerHandler)
+router.post('/banners', requireAuth, bannerUpload.single('image'), createBannerHandler)
 
 // PUT /banners/:id - accepts both FormData (legacy) and JSON (builder)
 const updateBannerHandler = async (req, res, next) => {
@@ -517,9 +521,9 @@ const updateBannerHandler = async (req, res, next) => {
   }
 }
 
-router.put('/banners/:id', bannerUpload.fields([{ name: 'image', maxCount: 1 }, { name: 'imageMobile', maxCount: 1 }]), updateBannerHandler)
+router.put('/banners/:id', requireAuth, bannerUpload.fields([{ name: 'image', maxCount: 1 }, { name: 'imageMobile', maxCount: 1 }]), updateBannerHandler)
 
-router.delete('/banners/:id', async (req, res, next) => {
+router.delete('/banners/:id', requireAuth, async (req, res, next) => {
   try {
     await deleteBanner(req.params.id)
     res.status(204).send()
@@ -528,7 +532,7 @@ router.delete('/banners/:id', async (req, res, next) => {
   }
 })
 
-router.post('/communities', communityUpload.fields([{ name: 'image' }, { name: 'priestPhoto' }]), async (req, res, next) => {
+router.post('/communities', requireAuth, communityUpload.fields([{ name: 'image' }, { name: 'priestPhoto' }]), async (req, res, next) => {
   try {
     const body = { ...req.body }
     
@@ -575,7 +579,7 @@ router.get('/moments', async (_req, res, next) => {
 })
 
 // Create a new Link Rápido entry
-router.post('/moments', momentsUpload.fields([{ name: 'image1' }, { name: 'image2' }, { name: 'image3' }]), async (req, res, next) => {
+router.post('/moments', requireAuth, momentsUpload.fields([{ name: 'image1' }, { name: 'image2' }, { name: 'image3' }]), async (req, res, next) => {
   try {
     const body = { ...req.body }
     const images = []
@@ -609,7 +613,7 @@ router.post('/moments', momentsUpload.fields([{ name: 'image1' }, { name: 'image
 })
 
 // Delete a specific Link Rápido entry by id
-router.delete('/moments/:id', async (req, res, next) => {
+router.delete('/moments/:id', requireAuth, async (req, res, next) => {
   try {
     const id = req.params.id
     const p = path.join(process.cwd(), 'server', 'data', 'moments.json')
@@ -639,7 +643,7 @@ router.delete('/moments/:id', async (req, res, next) => {
 })
 
 // Delete all entries (clear moments)
-router.delete('/moments', async (_req, res, next) => {
+router.delete('/moments', requireAuth, async (_req, res, next) => {
   try {
     const p = path.join(process.cwd(), 'server', 'data', 'moments.json')
     if (!fs.existsSync(p)) return res.status(204).send()
@@ -677,7 +681,7 @@ router.get('/playlist', async (_req, res, next) => {
   }
 })
 
-router.post('/playlist', audioUpload.single('audio'), async (req, res, next) => {
+router.post('/playlist', requireAuth, audioUpload.single('audio'), async (req, res, next) => {
   try {
     const { title, youtube } = req.body
     if (!title) return res.status(400).json({ message: 'Título é obrigatório.' })
@@ -696,7 +700,7 @@ router.post('/playlist', audioUpload.single('audio'), async (req, res, next) => 
   }
 })
 
-router.delete('/playlist/:id', async (req, res, next) => {
+router.delete('/playlist/:id', requireAuth, async (req, res, next) => {
   try {
     const id = req.params.id
     const p = path.join(process.cwd(), 'server', 'data', 'playlist.json')
@@ -722,7 +726,7 @@ router.delete('/playlist/:id', async (req, res, next) => {
   }
 })
 
-router.delete('/playlist', async (_req, res, next) => {
+router.delete('/playlist', requireAuth, async (_req, res, next) => {
   try {
     const p = path.join(process.cwd(), 'server', 'data', 'playlist.json')
     if (!fs.existsSync(p)) return res.status(204).send()
@@ -745,7 +749,7 @@ router.delete('/playlist', async (_req, res, next) => {
   }
 })
 
-router.put('/communities/:id', communityUpload.fields([{ name: 'image' }, { name: 'priestPhoto' }]), async (req, res, next) => {
+router.put('/communities/:id', requireAuth, communityUpload.fields([{ name: 'image' }, { name: 'priestPhoto' }]), async (req, res, next) => {
   try {
     const id = req.params.id
     // If a new file is uploaded, remove the previous stored images to avoid orphaned files
@@ -792,7 +796,7 @@ router.put('/communities/:id', communityUpload.fields([{ name: 'image' }, { name
   }
 })
 
-router.delete('/communities/:id', async (req, res, next) => {
+router.delete('/communities/:id', requireAuth, async (req, res, next) => {
   try {
     // remove associated images before deleting the database record
     const id = req.params.id

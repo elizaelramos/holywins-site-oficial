@@ -4,6 +4,7 @@ import { createInscricao, findResponsavelByCodigo, listInscricoes, deleteInscric
 import { notifyNewInscricao } from '../notifyTelegram.js'
 import { sendInscricaoConfirmation } from '../sendEmail.js'
 import { requireAuth } from './auth.js'
+import { isGibberish, isInvalidPhone } from '../spamFilter.js'
 
 const router = Router()
 const inscricaoLimiter = rateLimit({
@@ -28,6 +29,8 @@ export function validate(payload) {
   text(payload.telefone, 'Telefone', 40, true)
   text(payload.email, 'E-mail', 255)
   if (typeof payload.email === 'string' && payload.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email.trim())) errors.push('Confira o e-mail informado')
+  if (isInvalidPhone(payload.telefone)) errors.push('Confira o telefone informado')
+  if ([payload.nome, payload.paroquia, payload.endereco].some(isGibberish)) errors.push('Confira os dados informados')
   for (const key of ['paroquia', 'comoSoube']) text(payload[key], key, 255)
   text(payload.endereco, 'Endereço', 500)
   if (!Array.isArray(payload.participantes) || !payload.participantes.length) {
@@ -39,6 +42,7 @@ export function validate(payload) {
         return
       }
       text(p.nome, 'Nome da pessoa ' + (i + 1), 255, true)
+      if ([p.nome, p.paroquia, p.movimento, p.restricaoAlimentar, p.santoDevocao].some(isGibberish)) errors.push('Confira os dados da pessoa ' + (i + 1))
       if (typeof p.idade !== 'number' || !Number.isInteger(p.idade) || p.idade < 0 || p.idade > 120) errors.push('Idade inválida para a pessoa ' + (i + 1))
       for (const key of ['paroquia', 'movimento', 'restricaoAlimentar', 'santoDevocao']) text(p[key], key, 255)
       text(p.tamanhoCamiseta, 'Camiseta', 10)

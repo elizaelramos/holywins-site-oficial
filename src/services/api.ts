@@ -236,6 +236,7 @@ export async function createCommunityRequest(community: Partial<import('../conte
     const response = await fetch(`${API_URL}/communities`, {
       method: 'POST',
       body: community as unknown as FormData,
+      credentials: 'include',
     })
     if (!response.ok) {
       const message = await response.text()
@@ -255,6 +256,7 @@ export async function updateCommunityRequest(id: string, community: Partial<impo
     const response = await fetch(`${API_URL}/communities/${id}`, {
       method: 'PUT',
       body: community as unknown as FormData,
+      credentials: 'include',
     })
     if (!response.ok) {
       const message = await response.text()

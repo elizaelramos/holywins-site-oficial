@@ -19,9 +19,11 @@ test('inscrições públicas, contagem e avisos sem acessar banco ou serviços e
   const auth = new vm.SourceTextModule(await readFile(new URL('./routes/auth.js', import.meta.url), 'utf8'))
   await auth.link((name) => moduleFor(name === 'express' ? { default: express } : name === 'bcryptjs' ? { default: {} } : { getConnection() { throw new Error('Banco não deve ser acessado') }, logActivity() {} }))
   await auth.evaluate()
+  const spamFilter = await import('./spamFilter.js')
   const source = new vm.SourceTextModule(await readFile(new URL('./routes/inscricoes.js', import.meta.url), 'utf8'))
   await source.link((name) => {
     if (name === 'express') return moduleFor({ Router: express.Router })
+    if (name === '../spamFilter.js') return moduleFor(spamFilter)
     if (name === 'express-rate-limit') return moduleFor({ default: rateLimit })
     if (name === './auth.js') return auth
     if (name.includes('notifyTelegram')) return moduleFor({ notifyNewInscricao: async (data) => telegram.push(data) })
@@ -91,6 +93,12 @@ test('inscrições públicas, contagem e avisos sem acessar banco ou serviços e
       { ...minimum, participantes: [{ nome: 'Ana', idade: -1 }] },
     ]) assert.equal((await post(body)).status, 400)
     assert.equal(saved.length, count)
+    for (const body of [
+      { ...minimum, telefone: 'ANAXGmYSFyddvpkGWjvbbfWM' },
+      { ...minimum, nome: 'WQGiKJFVSeNRcsncsHaEpM', paroquia: 'VgigTJkUDOWjFWvhxpwlyCf' },
+      { ...minimum, participantes: [{ nome: 'Maria', idade: 30, restricaoAlimentar: 'uoiPZdRgjuoIrzaAlZrWWrvI' }] },
+    ]) assert.ok(source.namespace.validate(body).length)
+    assert.deepEqual(source.namespace.validate({ ...minimum, nome: 'LAURA DE SOUZA', paroquia: 'Paróquia Nossa Senhora da Candelária' }), [])
     assert.ok(source.namespace.validate({ ...minimum, participantes: [{ nome: 'Ana', participaDesfile: 'false' }] }).length)
   })
   await t.test('criança exige adulto inscrito, mesmo quando o contato não participa', async () => {
