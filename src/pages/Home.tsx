@@ -73,15 +73,6 @@ export default function Home() {
       <BannerCarousel banners={banners} />
 
       <PromoSpotlight
-        imageSrc="/images/logo.png"
-        title="Inscrições abertas para o Holywins!"
-        description="Confirme sua presença e inscreva todas as pessoas que vão com você, incluindo os acompanhantes das crianças. Assim, podemos preparar a alimentação e acolher todos com carinho."
-        linkHref="/inscricoes"
-        linkLabel="Preencher minha inscrição"
-        badgeText="😇 Inscrições abertas"
-      />
-
-      <PromoSpotlight
         imageSrc="/images/carta-premiada/carta-premiada-holywins-2026.jpg"
         imageFit="cover"
         title="Carta Premiada Holywins 2026"

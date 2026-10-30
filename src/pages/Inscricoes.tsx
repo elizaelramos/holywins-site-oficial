@@ -32,7 +32,7 @@ export default function Inscricoes({ embedded = false }: { embedded?: boolean })
         setInscricoesAbertas(data.abertas === true)
       })
       .catch(() => {
-        if (!controller.signal.aborted) setErrorMsg('Não foi possível consultar as inscrições. Atualize a página para tentar novamente.')
+        if (!controller.signal.aborted) setInscricoesAbertas(false)
       })
       .finally(() => { if (!controller.signal.aborted) setCarregando(false) })
     return () => controller.abort()
@@ -76,7 +76,7 @@ export default function Inscricoes({ embedded = false }: { embedded?: boolean })
     if (enviando.current) return
     setErrorMsg('')
     if (!inscricoesAbertas) {
-      setErrorMsg('As inscrições ainda não estão abertas.')
+      setErrorMsg('Inscrições encerradas.')
       return
     }
     if (!nome.trim() || !telefone.trim() || pessoas.some((p) => !p.nome.trim())) {
@@ -140,12 +140,20 @@ export default function Inscricoes({ embedded = false }: { embedded?: boolean })
     )
   }
 
+  if (!carregando && !inscricoesAbertas) {
+    return (
+      <section className="inscricao-pagina">
+        {!embedded && <Link to="/" className="inscricao-voltar"><ArrowLeft size={18} aria-hidden="true" /> Voltar</Link>}
+        <h1>Inscrições encerradas</h1>
+      </section>
+    )
+  }
+
   return (
     <section className="inscricao-pagina">
       {!embedded && <Link to="/" className="inscricao-voltar"><ArrowLeft size={18} aria-hidden="true" /> Voltar</Link>}
       {embedded ? <h2>Inscreva-se no Holywins Corumbá</h2> : <h1>Holywins Corumbá</h1>}
       <p>Sua presença nos ajuda a preparar tudo com carinho. Todos são bem-vindos!</p>
-      {!carregando && !inscricoesAbertas && <p className="inscricao-aviso" role="status">As inscrições abrem em breve.</p>}
       <form onSubmit={handleSubmit}>
         <fieldset disabled={submitting} className="inscricao-campos">
           <legend>Inscrição</legend>

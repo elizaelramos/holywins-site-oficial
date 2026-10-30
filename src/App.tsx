@@ -23,7 +23,7 @@ import { trackPageView } from './services/analytics.ts'
 
 const routes = [
   { path: '/', label: 'Início', showInNav: true },
-  { path: '/inscricoes', label: 'Inscrições', showInNav: true },
+  { path: '/inscricoes', label: 'Inscrições', showInNav: false },
   { path: '/galeria', label: 'Galeria', showInNav: true },
   { path: '/comunidades', label: 'Comunidades', showInNav: true },
   { path: '/santo-do-dia', label: 'Santo do dia', showInNav: true },
@@ -76,18 +76,8 @@ function App() {
               {route.label}
             </NavLink>
           ))}
-          <Link
-            to="/inscricoes"
-            className="primary-btn primary-btn--mobile"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Participar
-          </Link>
         </nav>
 
-        <Link to="/inscricoes" className="primary-btn primary-btn--desktop">
-          Participar
-        </Link>
       </header>
 
       <main>

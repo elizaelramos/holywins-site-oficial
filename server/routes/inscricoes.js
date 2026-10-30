@@ -63,7 +63,7 @@ router.get('/status', (_req, res) => res.json({ abertas: inscricoesAbertas() }))
 
 router.post('/', inscricaoLimiter, async (req, res, next) => {
   try {
-    if (!inscricoesAbertas()) return res.status(403).json({ message: 'As inscrições ainda não estão abertas.' })
+    if (!inscricoesAbertas()) return res.status(403).json({ message: 'Inscrições encerradas.' })
     const errors = validate(req.body)
     if (errors.length) return res.status(400).json({ errors })
 

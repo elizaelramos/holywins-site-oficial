@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom'
 import ContactForm from '../components/ContactForm.tsx'
 import { useSiteData } from '../context/SiteDataContext.tsx'
 
@@ -33,20 +32,6 @@ export default function Contact() {
               <strong>{contact.officeHours}</strong>
             </li>
           </ul>
-        </div>
-        <div className="map-placeholder">
-          <div>
-            <img
-              src="/images/emoji_santidade_Holywins.png"
-              alt=""
-              className="emoji-icon"
-            />
-            <p className="map-title">Estamos com inscrições abertas!</p>
-            <small className="map-sub">Garanta já a sua participação no Holywins.</small>
-            <Link to="/inscricoes" className="primary-btn">
-              Fazer inscrição
-            </Link>
-          </div>
         </div>
       </section>
 
